@@ -1,0 +1,45 @@
+<html>
+	<head>
+		<script ="text/javascript">
+			chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+				if (request.method == "getPaginationOnlineOption")
+					sendResponse({status: localStorage['paginationOnlineOn']});
+				else if (request.method == "getPaginationOfflineOption")
+					sendResponse({status: localStorage['paginationOn']});
+				else if (request.method == "getScrollTrackingOption")
+					sendResponse({status: localStorage['scrollTrackingOn']});
+				else if (request.method == "getSyncButtonOption")
+					sendResponse({status: localStorage['syncButtonOn']});
+				else if (request.method == "getFolders") {
+					sendResponse({status: localStorage['folders']});
+				}
+				else if (request.method == "addFolder") {
+					folders = localStorage['folders'];
+					if (!folders) {
+						folders = new Array();
+					}
+					folder = request.folder;
+					if (folders.length == 0) {
+						folders[0] = folder;
+					}
+					else {
+						folders += "," + folder;
+					}
+					localStorage['folders'] = folders;
+				}
+				else if (request.method == "removeFolder") {
+					folders = localStorage['folders'].split(',');
+					folder = request.folder;
+					for (i in folders) {
+						if (folders[i] == folder) {
+							folders.splice(i,1);
+						}
+					}
+					localStorage['folders'] = folders;
+				}
+				else
+					sendResponse({}); // snub them.
+			});
+		</script>
+	</head>
+</html>
