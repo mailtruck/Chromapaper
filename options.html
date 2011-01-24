@@ -98,6 +98,13 @@
 				}
 			}
 			
+			function resetFolders() {
+				var r=confirm("Are you sure you want to reset folders? You'll need add each one again later.");
+				if (r==true) {
+					localStorage['folders'] = "";
+				}
+			}
+			
 			pages.setup();
 			
 			// to-do: put these options in an array, since for each will be handy...
@@ -147,34 +154,7 @@
 				</div>
 				<div class="clear"></div>
 			</div>
-			<div class="tableViewCell" onClick="paginationOfflineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Offline two-column pagination</b>
-					</span>
-					<input type="checkbox" id="paginationCheckbox" value="yes1"><br>
-					<div class="summary">
-						Use left and right keys to navigate. Works great on CR-48. 
-					</div>
-				</div>
 				<div class="clear"></div>
-			</div>
-			<div class="tableViewCell" onClick="paginationOnlineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Online two-column pagination</b>
-					</span>
-					<input type="checkbox" id="paginationOnlineCheckbox" value="yes1"><br>
-					<div class="summary">
-						Pagination in the online Instapaper text view.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
 			<div class="tableViewCell" onClick="saveScrollOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
 				<div class="cornerControls"></div>
 				<div class="starBox"></div>
@@ -189,7 +169,7 @@
 				</div>
 				<div class="clear"></div>
 			</div>
-			<div class="tableViewCell" onClick="saveImagesOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+			<div class="tableViewCell tableViewCellLast" onClick="saveImagesOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
 				<div class="cornerControls"></div>
 				<div class="starBox"></div>
 				<div class="titleRow" style="width:90%;">
@@ -203,12 +183,62 @@
 				</div>
 				<div class="clear"></div>
 			</div>
+			
+			
+			<br>
+			
+			
+			<div class="tableViewCell tableViewCellFirst" onClick="paginationOfflineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+				<div class="cornerControls"></div>
+				<div class="starBox"></div>
+				<div class="titleRow" style="width:90%;">
+					<span class="tableViewCellTitleLink">
+						<b>Offline two-column pagination</b>
+					</span>
+					<input type="checkbox" id="paginationCheckbox" value="yes1"><br>
+					<div class="summary">
+						Use left and right keys to navigate. Works great on CR-48. 
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div>
+			<div class="tableViewCell tableViewCellLast" onClick="paginationOnlineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+				<div class="cornerControls"></div>
+				<div class="starBox"></div>
+				<div class="titleRow" style="width:90%;">
+					<span class="tableViewCellTitleLink">
+						<b>Online two-column pagination</b>
+					</span>
+					<input type="checkbox" id="paginationOnlineCheckbox" value="yes1"><br>
+					<div class="summary">
+						Pagination in the online Instapaper text view.
+					</div>
+				</div>
+			</div>
+			
+			
+			<br>
+			
+			
+			<div class="tableViewCell tableViewCellFirst" onClick="resetFolders()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+				<div class="cornerControls"></div>
+				<div class="starBox"></div>
+				<div class="titleRow" style="width:90%;">
+					<span class="tableViewCellTitleLink">
+						<b>Clear folders</b>
+					</span>
+					<div class="summary">
+						Clears the folders that are set to sync. Do this if you change accounts.
+					</div>
+				</div>
+				<div class="clear"></div>
+			</div>
 			<div class="tableViewCell tableViewCellLast" onClick="reset()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
 				<div class="cornerControls"></div>
 				<div class="starBox"></div>
 				<div class="titleRow" style="width:90%;">
 					<span class="tableViewCellTitleLink">
-						<b>Reset saved articles</b>
+						<b>Clear saved articles</b>
 					</span>
 					<div class="summary">
 						If something's super messed up with your article list, reseting and syncing again might fix it.

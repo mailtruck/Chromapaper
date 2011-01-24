@@ -18,7 +18,11 @@ if (!saveImagesOption) {
 	saveImagesOption = "false";
 }
 
-var foldersToSync = localStorage['foldersToSync'];
+var foldersToSync = localStorage['folders'];
+if (foldersToSync) {
+	foldersToSync = foldersToSync.split(','); //gahhhhh
+}
+
 
 var pages = {
 
@@ -317,34 +321,41 @@ function getInstapaperHTML() {
 	if (noarticles == true) {
 		return ["no articles"];
 	}
-
-	for (i in foldersToSync) {
-		instapaperHTML.length;
-		folderNum = foldersToSync[i];
-		loop_counter = 1;
-		while (stop != 1) {
-			var instapaperPage = new XMLHttpRequest();
-			try {
-				instapaperPage.open("GET", "http://www.instapaper.com/u/folder/" + folderNum + "/lol/" + loop_counter, false);
-				instapaperPage.send();
-			}
-			catch(err) {
-				console.log("Error description: " + err.description);
-			}
+	
+	if (foldersToSync) {
+		console.log("well, folderstosync exists... that's a start");
+		for (i in foldersToSync) {
+			console.log("loopin for each folder");
+			folderNum = foldersToSync[i];
+			console.log("folder: " + folderNum);
+			loop_counter = 1;
 			
-			var instapaperPageHTMLString = new String();
-			var instapaperPageHTMLString = instapaperPage.responseText;
+			stop = false;
 			
-			//First, check to make sure there's items on the page. If not, stop.
+			while (stop != true) {
+				var instapaperPage = new XMLHttpRequest();
+				try {
+					instapaperPage.open("GET", "http://www.instapaper.com/u/folder/" + folderNum + "/lol/" + loop_counter, false);
+					instapaperPage.send();
+				}
+				catch(err) {
+					console.log("Error description: " + err.description);
+				}
+				
+				var instapaperPageHTMLString = new String();
+				var instapaperPageHTMLString = instapaperPage.responseText;
+				
+				//First, check to make sure there's items on the page. If not, stop.
 
-			if (instapaperPageHTMLString.search("No articles in this folder.") != -1) {
-				//no articles saved *on this page*
-				stop = 1
+				if (instapaperPageHTMLString.search("No articles in this folder.") != -1) {
+					//no articles saved *on this page*
+					stop = true
+				}
+				if (stop != true) {
+					instapaperHTML[instapaperHTML.length + 1] = instapaperPageHTMLString;                  
+				}
+				loop_counter++;
 			}
-			if (stop != 1) {
-				instapaperHTML[instapaperHTML.length + 1] = instapaperPageHTMLString;                  
-			}
-			loop_counter++;
 		}
 	}
 	
