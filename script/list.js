@@ -100,7 +100,7 @@ function renderList(tx,results) {
 
 function renderMainHTML() {
 	//YES this totally blows. Doing this so it doesn't render everything before redirecting. Looks nicer. Goddamn I hate editing it though.
-	document.getElementById("container").innerHTML = '<div id="header"><div id="userpanel"><a href="options.html">Options</a></div><h1 id="logo"><span class="logo">ChromaPaper</a></h1><div style="font-size: 14px; margin-top: 8px;">A simple tool to save web pages for reading later.</div> </div><div id="bookmark_list"><!-- here will be pages --></div><div id="footer"> <script type="text/javascript">renderDebugOptions();</script><div style="margin-top:1em;">Unofficial Chrome app by <a href="http://thomas.mream.net">Thomas</a> | Instapaper &copy;&nbsp;2010 Instapaper, LLC.</div> </div> ';
+	document.getElementById("container").innerHTML = '<div id="header"><div id="userpanel"><a href="options.html">Options</a></div><h1 id="logo"><span class="logo">Chromapaper</a></h1><div style="font-size: 14px; margin-top: 8px;">A simple tool to save web pages for reading later.</div> </div><div id="bookmark_list"><!-- here will be pages --></div><div id="footer"> <script type="text/javascript">renderDebugOptions();</script><div style="margin-top:1em;">Unofficial Chrome app by <a href="http://thomas.mream.net">Thomas</a> | Instapaper &copy;&nbsp;2010 Instapaper, LLC.</div> </div> ';
 }
 
 function noArticlesOverlayOffline() {

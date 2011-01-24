@@ -57,8 +57,6 @@ function syncFolderOption() {
 	syncToChromeLabel = document.createElement("label");
 	syncToChromeLabel.setAttribute("for","syncToChrome");
 	syncToChromeLabel.setAttribute("style","display: block; width: 50%; margin: 0px auto 20px auto; font-size: 14px;");
-
-	//syncToChromeLabel.innerHTML = '<input id="syncToChrome" type="checkbox">        Sync to Chromapaper';
 	
 	syncToChromeInput = document.createElement("input");
 	syncToChromeInput.setAttribute("id","syncToChrome");
