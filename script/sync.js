@@ -35,6 +35,16 @@ var pages = {
 			function() {console.log("Created/connected to DB - pages");}
 			);
 		});
+		
+		// WARNING: UNTESTED CODE
+		// Theoretically can be used in the future to add columns without breaking everything??
+		/*pages.db.transaction(function(tx) {
+			tx.executeSql("if not exists (select * from information_schema.columns where table_name = 'pages' and column_name = 'images') begin alter table pages add images string end",
+			[],
+			function () {console.log("Created images column");}
+			);
+		});*/
+		
 		pages.db.transaction(function(tx) {
 			tx.executeSql("create table if not exists " +
 			"images(id integer, url string, src string, data blob)",

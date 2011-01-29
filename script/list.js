@@ -132,12 +132,13 @@ function removeOverlay() {
 testOnline();
 
 if (online == true && debug==false) {
-	break; //this actually throws up an error that stops rendering BUT WHATEVER WORKS DAMMIT
+	//do nothing
 }
+else {
+	if (document.addEventListener) {
+		document.addEventListener("DOMContentLoaded", renderMainHTML, false);
+	}
 
-if (document.addEventListener) {
-	document.addEventListener("DOMContentLoaded", renderMainHTML, false);
+	pages.setup();
+	pages.list();
 }
-
-pages.setup();
-pages.list();
