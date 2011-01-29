@@ -1,3 +1,7 @@
+//this ended up being a really complex file, and I tended to go for ease-of-coding over elegance. There's a network of callbacks here that is just awkward... I suppose a clean-up is technically on my to-do list, but honestly, I'm at the point now where "if it ain't broke," etc., etc.
+
+//look at all these globals! not my finest hour, that's for sure.
+
 var syncFailed = false;
 var isPageSaved;
 var scrapedURLs;
@@ -516,8 +520,6 @@ function scrapeImages(oid,url,html) {
 		image.overrideMimeType('text/plain; charset=x-user-defined');
 		image.send();
 		
-		//setTimeout(function() {console.log(Base64.encodeBinary(image.responseText));},5000);
-		
 		blobEncoded = Base64.encodeBinary(image.responseText); 
 		pages.saveImage(id, url, imgSrc, blobEncoded);
 	}
@@ -540,7 +542,7 @@ function syncSuccessOverlay() {
 		html = "<div id='overlayHeader'>Sync finished.</div><div id='overlayText'>Redirecting...</div>";
 		renderOverlay(html);
 		console.log("REDIRECT TRIGGERED");
-		//setTimeout('redirectHome()',2000);
+		setTimeout('redirectHome()',2000);
 	}
 	else {
 		syncError400Overlay();

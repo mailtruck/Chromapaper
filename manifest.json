@@ -1,7 +1,7 @@
 {
-	"name": "ChromaPaper Dev",
-	"description": "ChromaPaper enhances Instapaper with features including offline reading, article pagination, and more.",
-	"version": "33",
+	"name": "Chromapaper",
+	"description": "Chromapaper enhances Instapaper with features including offline reading, article pagination, and more.",
+	"version": "1.3",
 	"options_page": "options.html",
 	"background_page":"background.html",
 	"app": {

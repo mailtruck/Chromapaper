@@ -1,6 +1,6 @@
 //note to anyone who stumbles on this: yeah, it's pretty messy. A cleanup is on my todo list :)
 
-var debug = true;
+var debug = false;
 var online = false;
 
 //options - rememeber, even "booleans" are just strings in localStorage!
