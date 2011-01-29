@@ -1,7 +1,7 @@
 {
 	"name": "Chromapaper",
 	"description": "Chromapaper enhances Instapaper with features including offline reading, article pagination, and more.",
-	"version": "1.3",
+	"version": "1.30",
 	"options_page": "options.html",
 	"background_page":"background.html",
 	"app": {
@@ -16,7 +16,7 @@
 	"permissions": [
 		"unlimitedStorage",
 		"http://www.instapaper.com/",
-		"http://*/*.png"
+		"http://*/*"
 	],
 	"content_scripts": [
 		{
