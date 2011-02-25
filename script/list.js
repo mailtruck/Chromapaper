@@ -1,8 +1,5 @@
 //note to anyone who stumbles on this: yeah, it's pretty messy. A cleanup is on my todo list :)
 
-var debug = false;
-var online = false;
-
 //options - rememeber, even "booleans" are just strings in localStorage!
 
 var pages = {
@@ -10,7 +7,7 @@ var pages = {
 		pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
 		pages.db.transaction(function(tx) {
 			tx.executeSql("create table if not exists " +
-				"pages(id integer primary key asc, article_title string, url string, html string, available boolean, description string, images string)",
+				"pages(id integer primary key asc, article_title string, url string, html string, available string, description string, images string)",
 				[],
 				function() {console.log("Created/connected to DB");}
 				);
@@ -30,28 +27,9 @@ var pages = {
 	}
 };
 
-function testOnline() {
-	var pingTest = new XMLHttpRequest();
-	try {
-		pingTest.open("HEAD", "http://www.instapaper.com/", false);
-		pingTest.send();
-	}
-	catch(err) {
-		console.log("Error description: " + err.description);
-	}
-	if (pingTest.status == 200) {
-		online = true;
-	}
-	if (online == true && debug==false) {
-		location.replace("http://www.instapaper.com/u/");
-	}
-}
-
 function renderList(tx,results) {
 	if (results.rows.length == 0) {
-		if (online == false || debug == true) {
-			noArticlesOverlayOffline();
-		}
+		noArticlesOverlayOffline();
 	}
 	var i;
 	var list=document.getElementById("bookmark_list");
@@ -98,11 +76,6 @@ function renderList(tx,results) {
 	}
 }
 
-function renderMainHTML() {
-	//YES this totally blows. Doing this so it doesn't render everything before redirecting. Looks nicer. Goddamn I hate editing it though.
-	document.getElementById("container").innerHTML = '<div id="header"><div id="userpanel"><a href="options.html">Options</a></div><h1 id="logo"><span class="logo">Chromapaper</a></h1><div style="font-size: 14px; margin-top: 8px;">A simple tool to save web pages for reading later.</div> </div><div id="bookmark_list"><!-- here will be pages --></div><div id="footer"> <script type="text/javascript">renderDebugOptions();</script><div style="margin-top:1em;">Unofficial Chrome app by <a href="http://thomas.mream.net">Thomas</a> | Instapaper &copy;&nbsp;2010 Instapaper, LLC.</div> </div> ';
-}
-
 function noArticlesOverlayOffline() {
 	html = "<div id='overlayHeader'>No pages!</div><div id='overlayText'>You have no pages in your offline list. Sync at Instapaper.com when you are online.</div>"
 	renderOverlay(html);
@@ -128,17 +101,5 @@ function removeOverlay() {
 	document.body.removeChild(document.getElementById("overlayContents"));
 }
 
-
-testOnline();
-
-if (online == true && debug==false) {
-	//do nothing
-}
-else {
-	if (document.addEventListener) {
-		document.addEventListener("DOMContentLoaded", renderMainHTML, false);
-	}
-
-	pages.setup();
-	pages.list();
-}
+pages.setup();
+pages.list();
