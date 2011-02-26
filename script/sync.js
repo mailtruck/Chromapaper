@@ -516,11 +516,12 @@ function scrapeImages(oid,url,html) {
 		imgSrc = images[curImage].getAttribute("src");
 		
 		var image = new XMLHttpRequest();
-		image.open("POST",imgSrc,false);
+		image.open("GET",imgSrc,false);
 		image.overrideMimeType('text/plain; charset=x-user-defined');
 		image.send();
 		
 		blobEncoded = Base64.encodeBinary(image.responseText); 
+		
 		pages.saveImage(id, url, imgSrc, blobEncoded);
 	}
 }

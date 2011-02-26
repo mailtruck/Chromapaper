@@ -1,5 +1,7 @@
 //note to anyone who stumbles on this: yeah, it's pretty messy. A cleanup is on my todo list :)
 
+var debug = true; //disables the redirect from chromapaper icon->instapaper.com when online
+var online = false;
 //options - rememeber, even "booleans" are just strings in localStorage!
 
 var pages = {
