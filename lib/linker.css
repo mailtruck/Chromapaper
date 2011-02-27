@@ -17,6 +17,10 @@
 	text-decoration:none;
 }
 
+#family_linker a:hover {
+	text-decoration:none !important;
+}
+
 .linker_selected {
 	float:left;
 	font-weight:bold;
