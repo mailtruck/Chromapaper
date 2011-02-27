@@ -45,6 +45,7 @@ function addOptions(sync) {
 	
 	optionsLink = document.createElement("a");
 	optionsLink.setAttribute("href",chrome.extension.getURL("options.html"));
+	optionsLink.setAttribute("target","_blank");
 	optionsLink.innerHTML = "Options";
 	
 	newBullet = document.createElement("span");
