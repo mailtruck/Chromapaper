@@ -50,7 +50,7 @@ function renderPage(tx,results) {
 	//Change link at bottom
 	backLink = getElementsByAttribute('document','a','href','/u')[0];
 	backLink.setAttribute("href", "list.html");
-	backLink.innerHTML = "Back to ChromaPaper";
+	backLink.innerHTML = "Back to Chromapaper";
 	
 	//Strip links
 	storyDiv = document.getElementById("story");
