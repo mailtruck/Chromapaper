@@ -41,7 +41,7 @@ function addOptions(sync) {
 	lowerDiv.appendChild(chromeDiv);
 	
 	label = document.createElement("span");
-	label.innerHTML = "ChromaPaper: "
+	label.innerHTML = "Chromapaper: "
 	
 	optionsLink = document.createElement("a");
 	optionsLink.setAttribute("href",chrome.extension.getURL("options.html"));
