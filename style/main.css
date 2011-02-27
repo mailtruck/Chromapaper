@@ -43,6 +43,29 @@
 	text-align:center;
 }
 
+/*
+       +-------------------+
+-------|   CSS Additions   |------------------------------------------------------------------------------------------
+       +-------------------+
+*/
+
+.curfolderitem {
+	margin-bottom: 5px;
+	margin-left: -8px;
+	padding: 2px 8px;
+	border: 1px solid #ddd;
+	background-color: #ddd;
+	-webkit-border-radius: 10px;  
+	font-weight:bold;
+}
+
+.folderitem {
+	margin-bottom: 5px;
+	margin-left: -8px;
+	padding: 2px 8px;
+	border: 1px solid inherit;
+	background-color: inherit;
+}
 
 /*
        +-----------------------------+
