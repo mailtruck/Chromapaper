@@ -1,6 +1,15 @@
-//this ended up being a really complex file, and I tended to go for ease-of-coding over elegance. There's a network of callbacks here that is just awkward... I suppose a clean-up is technically on my to-do list, but honestly, I'm at the point now where "if it ain't broke," etc., etc.
 
-//look at all these globals! not my finest hour, that's for sure.
+/*
+
+Okay, this is a really bad file.
+
+I'm going to do a true rewrite of it at some point soon, but honestly I'm more worried about adding more features than fixing things that (somehow) work. This code is a network of awkward callbacks and unstructured bits because I'd never really done development with anything asynchronous before. What you're seeing here is me attempting to handle a bunch of asynchronous WebSQL, and doing pretty badly at it. Oh, and there's various globals, including /loop counters/. 
+
+What we're getting at here is that I am not a good coder. But hey, I'm trying to learn! :)
+
+-- Thomas
+
+*/
 
 var syncFailed = false;
 var isPageSaved;
@@ -277,10 +286,6 @@ function savePage(loop_counter) {
 		downloadedPages++;
 		pages.save(page);
 	}
-}
-
-function refresh() {
-	window.location.reload()
 }
 
 //this function downloads the html for each instapaper unread page
