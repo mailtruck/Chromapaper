@@ -605,7 +605,11 @@ String.prototype.startsWith = function(str){
 
 
 
+/*
 
+Credit: http://emilsblog.lerch.org/2009/07/javascript-hacks-using-xhr-to-load.html
+
+*/
 
 
 Base64 = {
