@@ -12,41 +12,6 @@ if (!paginationSetting) {
 	paginationSetting = "false";
 }
 
-var pages = {
-	setup: function() {	
-		pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
-		pages.db.transaction(function(tx) {
-			tx.executeSql("create table if not exists " +
-				"pages(id integer primary key asc, article_title string, url string, html string, available boolean, description string, images string)",
-				[],
-				function() {console.log("Created/connected to DB");}
-				);
-		});
-	},
-	read: function(id) {	
-		pages.db.transaction(function(tx) {
-			tx.executeSql(
-				"select * from pages where id=?",
-				[id],
-				renderPage,
-				pages.onError);
-		});
-		
-	},
-	getImage: function(id, src) {
-		pages.db.transaction(function(tx) {
-			tx.executeSql(
-				"select * from images where id=? AND src=?",
-				[id, src],
-				replaceImage,
-				pages.onError);
-		});
-	},
-	onError: function(tx,error) {
-		console.log("Error occured: ", error.message);
-	}
-};
-
 /*
        +--------------------+
 -------|   Read Functions   |------------------------------------------------------------------------------------------
@@ -55,7 +20,7 @@ var pages = {
 
 //this is the base function for reading pages
 function read(id) {
-	pages.read(id);
+	database.read(id);
 }
 
 //this function renders the page, including replacing the relevant bits
@@ -97,7 +62,7 @@ function renderPage(tx,results) {
 	//Replace images
 	var storyImages = storyDiv.getElementsByTagName("img");
 	for (i = 0; i < storyImages.length; i++) {
-		pages.getImage(id, storyImages[i].getAttribute("src")); //calls back replaceImage
+		database.getImage(id, storyImages[i].getAttribute("src")); //calls back replaceImage
 	}
 	
 	//Fix encoding
@@ -195,7 +160,7 @@ function getElementsByAttribute(oElm, strTagName, strAttributeName, strAttribute
 
 console.log(location);
 
-pages.setup();
+database.setup();
 var h = getUrlVars();
 var id = h["id"];
 read(id);

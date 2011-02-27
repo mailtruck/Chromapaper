@@ -4,7 +4,7 @@ var debug = true; //disables the redirect from chromapaper icon->instapaper.com 
 var online = false;
 //options - rememeber, even "booleans" are just strings in localStorage!
 
-var pages = {
+/*var pages = {
 	setup: function() {	
 		pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
 		pages.db.transaction(function(tx) {
@@ -27,7 +27,7 @@ var pages = {
 	onError: function(tx,error) {
 		console.log("Error occured: ", error.message);
 	}
-};
+};*/
 
 function renderList(tx,results) {
 	if (results.rows.length == 0) {
@@ -103,5 +103,5 @@ function removeOverlay() {
 	document.body.removeChild(document.getElementById("overlayContents"));
 }
 
-pages.setup();
-pages.list();
+database.setup();
+database.list();
