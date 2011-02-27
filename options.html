@@ -11,7 +11,7 @@
 					pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
 					pages.db.transaction(function(tx) {
 						tx.executeSql("create table if not exists " +
-							"pages(id integer primary key asc, article_title string, url string, html string)",
+							"pages(id integer primary key asc, article_title string, url string, html string, available string, description string, images string)",
 							[],
 							function() {console.log("Created/connected to DB");}
 							);
@@ -39,41 +39,35 @@
 			// type - right now, only "checkbox"... mostly here for future additions
 			// defaultStatus - the default status of the object (string always!)
 			// inputId - the id of the input tag this object's tied to
-			var Option = function (name, type, defaultStatus, inputId) {
-			
-				this.name = name;
-				this.type = type;
-				this.defaultStatus = defaultStatus;
-				this.inputId = inputId;
+			// position - first, last, [middle] - changes if the corners are rendered on this list item
+			var Option = function (args) {
+				this.name = args.name;
+				this.type = args.type;
+				this.defaultStatus = args.defaultStatus;
+				
+				this.inputId = args.name;
+				this.header = args.header;
+				this.description = args.description;
+				this.position = args.position;
 				
 				console.log(this.name + " " + this.type + " " + this.defaultStatus + " " + this.inputId);
 				
-				this.load = function () {
-					var loadedStatus = localStorage[this.name];
-					if (!loadedStatus) {
-						this.update(this.defaultStatus);
-					}
-					else {
-						this.changeDisplayedOption(loadedStatus);
-					}
-				}
-				
 				//changes the checkbox or field to reflect the loaded option
-				this.changeDisplayedOption = function (status) {
+				this.changeDisplayedOption = function (newStatus) {
 					if (this.type == "checkbox") {
-						if (status == "true") {
+						if (newStatus == "true") {
 							document.getElementById(this.inputId).checked = true;
 						}
-						else if (status == "false") {
+						else if (newStatus == "false") {
 							document.getElementById(this.inputId).checked = false;
 						}
 					}
 				}
 				
 				//updates the option
-				this.update = function (status) {
-					localStorage[this.name] = status;
-					this.changeDisplayedOption(status);
+				this.update = function (newStatus) {
+					localStorage[this.name] = newStatus;
+					this.changeDisplayedOption(newStatus);
 				}
 				
 				//for checkboxes only - just updates to the opposite of what it was
@@ -87,6 +81,112 @@
 						}
 					}
 				}
+				
+					
+				
+				//First: load the option's status. If there is none, give it the default.
+				
+				var loadedStatus = localStorage[this.name];
+				if (!loadedStatus) {
+					this.status = defaultStatus
+				}
+				else {
+					this.status = loadedStatus;
+				}
+				
+				//Second: render the option.
+				optionsList = document.getElementById("bookmark_list");
+				
+				/*
+				---------- Create Div & Set Attributes ----------
+				*/
+				
+				//set class
+				optionElm = document.createElement('div');
+				if (this.position == "first") {
+					optionElm.setAttribute("class","tableViewCell tableViewCellFirst")
+				}
+				else if (this.position == "middle") {
+					optionElm.setAttribute("class","tableViewCell")
+				}
+				else if (this.position == "last") {
+					optionElm.setAttribute("class","tableViewCell tableViewCellLast")
+				}
+				
+				//set onClick
+				if (this.type == "checkbox") {
+					optionElm.setAttribute("onclick", "options." + this.name + ".toggle()");
+				}
+				
+				//color/style stuff
+				optionElm.setAttribute("onmouseover", "style.cursor='pointer';this.style.backgroundColor = '#eee';");
+				optionElm.setAttribute("onmouseout", "this.style.backgroundColor = '#F8F8F8'");
+				optionElm.setAttribute("style", "cursor: pointer; background-color: rgb(248, 248, 248);");
+				
+				optionsList.appendChild(optionElm);
+				
+				/*
+				---------- Create More Divs ----------
+				*/
+				
+				cornerControls = document.createElement("div");
+				cornerControls.setAttribute("class","cornerControls");
+				optionElm.appendChild(cornerControls);
+				
+				starBox = document.createElement("div");
+				starBox.setAttribute("class","starBox");
+				optionElm.appendChild(starBox);
+				
+				titleRow = document.createElement("div");
+				titleRow.setAttribute("class","titleRow");
+				titleRow.setAttribute("style","width:90%");
+				optionElm.appendChild(titleRow);
+				
+				clear = document.createElement("div");
+				clear.setAttribute("class","clear");
+				optionElm.appendChild(clear);
+				
+				/*
+				---------- Create Inner Bits ----------
+				*/
+				
+				header = document.createElement("span");
+				header.setAttribute("class","tableViewCellTitleLink");
+				header.innerHTML = "<b>" + this.header + "</b>";
+				titleRow.appendChild(header);
+				
+				if (this.type=="checkbox") {
+					input = document.createElement("input");
+					input.setAttribute("type","checkbox");
+					input.setAttribute("id",this.inputId);
+					input.setAttribute("value","yes1");
+				}
+				titleRow.appendChild(input);
+				
+				breakLine = document.createElement('br');
+				titleRow.appendChild(breakLine);
+				
+				summary = document.createElement("div");
+				summary.setAttribute("class","summary");
+				summary.innerHTML = this.description;
+				titleRow.appendChild(summary);
+				
+				if (this.position=='last') {
+					breakLine = document.createElement('br');
+					optionsList.appendChild(breakLine);
+				}
+				
+
+				var loadedStatus = localStorage[this.name];
+				if (!loadedStatus) {
+					//first run of options, hasn't been set - give it the default
+					this.update(this.defaultStatus);
+				}
+				else {
+					this.changeDisplayedOption(loadedStatus);
+					this.actualStatus = loadedStatus
+				}
+				
 				
 
 			}
@@ -107,33 +207,74 @@
 			
 			pages.setup();
 			
-			// to-do: put these options in an array, since for each will be handy...
+			var options = new Array;
 			
-			var offlineSyncOption = new Option("syncButtonOn","checkbox","true","syncButtonCheckbox");
-			var paginationOnlineOption = new Option("paginationOnlineOn","checkbox","false","paginationOnlineCheckbox");
-			var paginationOfflineOption = new Option("paginationOn","checkbox","false","paginationCheckbox");
-			var saveScrollOption = new Option("scrollTrackingOn","checkbox","false","scrollTrackingCheckbox");
-			var saveImagesOption = new Option("saveImagesOn","checkbox","false","saveImagesCheckbox");
-			
-			loadOptions = function () {
-				// ...here
-				console.log("loadOptions called");
-				offlineSyncOption.load();
-				paginationOnlineOption.load();
-				paginationOfflineOption.load()
-				saveScrollOption.load();
-				saveImagesOption.load();
+			function createOptions() {
+				// to-do: put these options in an array, since for each will be handy...
+				
+				//create header: sync options
+				console.log("creating options");
+				
+				options.syncButtonOn = new Option({
+					name:"syncButtonOn",
+					type:"checkbox",
+					defaultStatus: "true",
+					position: "first",
+					header: "Enable offline sync button", 
+					description: "Disable if you're not using the offline features of Chromapaper."
+				});
+				
+				options.scrollTrackingOn = new Option({
+					name:"scrollTrackingOn",
+					type:"checkbox",
+					defaultStatus:"false",
+					
+					position:"middle",
+					header: "Save scroll position",
+					description: "Saves the scroll position you leave an article at, and reloads to that position when the article is loaded."
+				});
+				options.saveImagesOn = new Option({
+					name:"saveImagesOn",
+					type:"checkbox",
+					defaultStatus:"false",
+					
+					position:"last", 
+					header: "Download Images",
+					description: "Downloads article images in offline view. Only works with some images for now; the rest just show up broken."
+				});
+				
+				options.paginationOnlineOn = new Option({
+					name:"paginationOnlineOn",
+					type:"checkbox",
+					defaultStatus:"false",
+					
+					position:"first",
+					header:"Offline two-column pagination",
+					description:"Use left and right keys to navigate."
+				});
+				options.paginationOn = new Option({
+					name:"paginationOn",
+					type:"checkbox",
+					defaultStatus:"false",
+					
+					position:"last",
+					header:"Online two-column pagination",
+					description:"Pagination in the online Instapaper text view."
+				});
+				
+				//reset saved folders option
+				//reset saved articles option
 			}
 			
+			window.onload = createOptions;
 		</script>
 	</head>
-	<body onload="loadOptions()">
 	
 		<div id="header">
 			<div id="userpanel">
 				
 			</div>
-			<h1 id="logo"><span class="logo"><a href="main.html">Chromapaper</a></h1>
+			<h1 id="logo"><span class="logo"><a href="index.html">Chromapaper</a></h1>
 			<div style="font-size: 14px; margin-top: 8px;">
 				A simple tool to save web pages for reading later.
 				
@@ -145,113 +286,35 @@
 		
 		</p>
 		<div id="bookmark_list">
-			<div class="tableViewCell tableViewCellFirst" onClick="offlineSyncOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Enable offline sync button</b>
-					</span>
-					<input type="checkbox" id="syncButtonCheckbox" onClick="" value="yes1"><br>
-					<div class="summary">
-						Disable if you're not using the offline features of Chromapaper.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
-				<div class="clear"></div>
-			<div class="tableViewCell" onClick="saveScrollOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Save scroll position</b> <i>(beta)</i>
-					</span>
-					<input type="checkbox" id="scrollTrackingCheckbox" value="yes1"><br>
-					<div class="summary">
-						Saves the scroll position you leave an article at, and reloads to that position when the article is loaded.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
-			<div class="tableViewCell tableViewCellLast" onClick="saveImagesOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Download Images</b> <i>(alpha)</i>
-					</span>
-					<input type="checkbox" id="saveImagesCheckbox" value="yes1"><br>
-					<div class="summary">
-						Downloads article images in offline view. Only works with some images for now; the rest just show up broken.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
-			
-			
-			<br>
-			
-			
-			<div class="tableViewCell tableViewCellFirst" onClick="paginationOfflineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Offline two-column pagination</b>
-					</span>
-					<input type="checkbox" id="paginationCheckbox" value="yes1"><br>
-					<div class="summary">
-						Use left and right keys to navigate. Works great on CR-48. 
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
-			<div class="tableViewCell tableViewCellLast" onClick="paginationOnlineOption.toggle()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Online two-column pagination</b>
-					</span>
-					<input type="checkbox" id="paginationOnlineCheckbox" value="yes1"><br>
-					<div class="summary">
-						Pagination in the online Instapaper text view.
-					</div>
-				</div>
-			</div>
-			
-			
-			<br>
-			
-			
-			<div class="tableViewCell tableViewCellFirst" onClick="resetFolders()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Clear folders</b>
-					</span>
-					<div class="summary">
-						Clears the folders that are set to sync. Do this if you change accounts.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
-			<div class="tableViewCell tableViewCellLast" onClick="reset()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
-				<div class="cornerControls"></div>
-				<div class="starBox"></div>
-				<div class="titleRow" style="width:90%;">
-					<span class="tableViewCellTitleLink">
-						<b>Clear saved articles</b>
-					</span>
-					<div class="summary">
-						If something's super messed up with your article list, reseting and syncing again might fix it.
-					</div>
-				</div>
-				<div class="clear"></div>
-			</div>
 		</div>
+
+		<div class="tableViewCell tableViewCellFirst" onClick="resetFolders()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+			<div class="cornerControls"></div>
+			<div class="starBox"></div>
+			<div class="titleRow" style="width:90%;">
+				<span class="tableViewCellTitleLink">
+					<b>Clear folders</b>
+				</span>
+				<div class="summary">
+					Clears the folders that are set to sync. Do this if you change accounts.
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="tableViewCell tableViewCellLast" onClick="reset()" onMouseOver="style.cursor='pointer';this.style.backgroundColor = '#eee';" onMouseOut="this.style.backgroundColor = '#F8F8F8'">
+			<div class="cornerControls"></div>
+			<div class="starBox"></div>
+			<div class="titleRow" style="width:90%;">
+				<span class="tableViewCellTitleLink">
+					<b>Clear saved articles</b>
+				</span>
+				<div class="summary">
+					If something's super messed up with your article list, reseting and syncing again might fix it.
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div> 
+		
 		<p style="font-size: 14px;line-height:18px;margin-top:20px;">
 	
 		
