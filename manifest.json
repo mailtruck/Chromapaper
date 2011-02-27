@@ -16,7 +16,8 @@
 	"permissions": [
 		"unlimitedStorage",
 		"http://www.instapaper.com/",
-		"http://*/*"
+		"http://*/*",
+		"management"
 	],
 	"content_scripts": [
 		{
