@@ -1,7 +1,23 @@
 <html>
 	<head>
 		<title>Chromapaper | Options</title>
+		
+		
+		<!-- Instapaper Family stuff -->
+		<script type="text/javascript" src="lib/jquery.js"></script>
+		<script type="text/javascript" src="lib/family.js"></script>
+		<script type="text/javascript" src="lib/familyLinker.js"></script>
+		<script type="text/javascript" src="lib/familyBold.js"></script>
+		<script type="text/javascript" src="lib/apiRemote.js"></script>
+		<script type="text/javascript" src="lib/options.js"></script>
+		<script type="text/javascript" src="lib/opts.js"></script>
+		<link rel="stylesheet" href="lib/styles.css" />
+		<link rel="stylesheet" href="lib/rcell.css" />
+		<link rel="stylesheet" href="lib/linker.css" />
+		<link rel="stylesheet" href="lib/jquery.css" />
+		
 		<link rel="stylesheet" type="text/css" href="style/main.css">
+		
 		<script type="text/javascript">
 		
 			// TO-DO: Make the HTML of the page dynamic based on the options.
@@ -270,16 +286,18 @@
 		</script>
 	</head>
 	
-		<div id="header">
+		<div id="header" style="margin-bottom:5px;">
 			<div id="userpanel">
 				
 			</div>
 			<h1 id="logo"><span class="logo"><a href="index.html">Chromapaper</a></h1>
-			<div style="font-size: 14px; margin-top: 8px;">
+			<!--<div style="font-size: 14px; margin-top: 8px;">
 				A simple tool to save web pages for reading later.
 				
-			</div> 
+			</div> -->
 		</div>
+		
+		<div id="family_linker"></div>
 		<p style="font-size: 14px;line-height:18px;margin-top:20px;">
 		
 		<b>New in v1.3: folder syncing!</b> To add a folder to be synced, go to <a href="http://www.instapaper.com/edit_folders">Instapaper's edit folders page</a> and click Edit for the folder you want to add, then check "Sync to Chromapaper." Note that this will sync <i>every item in the folder</i> - don't do this on "feed" folders such as Editor's Picks.</b><br /><br />
