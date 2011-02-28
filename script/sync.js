@@ -9,7 +9,23 @@ What we're getting at here is that I am not a good coder. But hey, I'm trying to
 
 -- Thomas
 
+SYNC.JS REWRITE PROJECT
+
+b. For each page -
+	- Compare to the pages saved (CheckPage)
+	-
+Split into several namespaces to cut down on globals:
+	instapaperScraper.*:
+		.urls - scrapes & returns all the urls on the page
+	
+	articleScraper.*:
+		
+	dbCallbacks.*:
+		
+	overlays.*:	
 */
+
+var disableRedirect = true; //for debugging
 
 var syncFailed = false;
 var isPageSaved;
@@ -25,6 +41,7 @@ var savedPages = 0;
 var archiveDone = false;
 var saveDone = false;
 var syncing = false;
+var page; //hurray for adding more globals!! fml. i know this needs a real redoing but i have to work on other things ._.
 
 var saveImagesOption = localStorage['saveImagesOn']
 if (!saveImagesOption) {
@@ -37,75 +54,38 @@ if (foldersToSync) {
 }
 
 
-var pages = {
+var dbCallbacks += {
+	function savedPages(tx,results) {
+		console.log("page saved");
+	
+		//do experiments to see what gets passed in tx and in results...
+		console.log(tx);
+		console.log(results.rows[1]);
+	
+		titleForDisplay = page.title.substr(0,40);
+		html = 'Saved "' + titleForDisplay;
+		if (titleForDisplay != page.title) {
+			html = html + '...';
+		}
+		html = html + '"';
+		document.getElementById("overlayText").innerHTML =  html
+	
+		savedPages++;
+		if (downloadedPages == savedPages) {
+			console.log("all pages downloaded??");
+			saveDone = true;
+			if (syncFailed == false) {
+				if (archiveDone == true && saveDone == true) {
+					syncSuccessOverlay();
+				}
+			}
+			else {
+				syncSuccessOverlay();
+			}
+		}
+	}
+}
 
-	setup: function() {        
-		pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
-		pages.db.transaction(function(tx) {
-			tx.executeSql("create table if not exists " +
-			"pages(id integer primary key asc, article_title string, url string, html string, available string, description string, images string)",
-			[],
-			function() {console.log("Created/connected to DB - pages");}
-			);
-		});
-		
-		// WARNING: UNTESTED CODE
-		// Theoretically can be used in the future to add columns without breaking everything??
-		/*pages.db.transaction(function(tx) {
-			tx.executeSql("if not exists (select * from information_schema.columns where table_name = 'pages' and column_name = 'images') begin alter table pages add images string end",
-			[],
-			function () {console.log("Created images column");}
-			);
-		});*/
-		
-		pages.db.transaction(function(tx) {
-			tx.executeSql("create table if not exists " +
-			"images(id integer, url string, src string, data blob)",
-			[],
-			function() {console.log("Created/connected to DB - images");sync();}
-			);
-		});
-	},
-	reset: function() {
-			pages.db.transaction(function(tx) {
-				tx.executeSql('drop table pages',
-				[],
-				null,
-				pages.onError);
-			});
-		},
-	save: function(page) {
-		pages.db.transaction(function(tx) {
-			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
-			[page.title, page.url, page.html, page.description],
-			function (tx,results) {
-				console.log("page saved");
-				
-				titleForDisplay = page.title.substr(0,40);
-				html = 'Saved "' + titleForDisplay;
-				if (titleForDisplay != page.title) {
-					html = html + '...';
-				}
-				html = html + '"';
-				document.getElementById("overlayText").innerHTML =  html
-				
-				savedPages++;
-				if (downloadedPages == savedPages) {
-					console.log("all pages downloaded??");
-					saveDone = true;
-					if (syncFailed == false) {
-						if (archiveDone == true && saveDone == true) {
-							syncSuccessOverlay();
-						}
-					}
-					else {
-						syncSuccessOverlay();
-					}
-				}
-			},
-			pages.onError);
-		});
-	},
 	checkPage: function(url,loop_counter) {
 		pages.db.transaction(function(tx) {
 			tx.executeSql("select * from pages where url=?",
@@ -289,226 +269,7 @@ function savePage(loop_counter) {
 }
 
 //this function downloads the html for each instapaper unread page
-function getInstapaperHTML() {
-	var instapaperHTML = new Array();
-	var loop_counter = 1;
-	var stop = 0;
-	var notloggedin = false;
-	var noarticles = false;
-	
-	//loop this for each page
-	while (stop != 1) {
-		var instapaperPage = new XMLHttpRequest();
-		try {
-			instapaperPage.open("GET", "http://www.instapaper.com/u/" + loop_counter, false);
-			instapaperPage.send();
-		}
-		catch(err) {
-			console.log("Error description: " + err.description);
-		}
-		
-		var instapaperPageHTMLString = new String();
-		var instapaperPageHTMLString = instapaperPage.responseText;
-		
-		//First, check to make sure there's items on the page. If not, stop.
 
-		if (instapaperPageHTMLString.search("Log out") == -1) {
-			//not logged in
-			notloggedin = true;
-			stop = 1;
-			return ["not logged in"];
-		} 
-		if (instapaperPageHTMLString.search("No articles saved.") != -1) {
-			//no articles saved *on this page*
-			if (loop_counter == 1) {
-				noarticles = true;
-			}
-			stop = 1
-		}
-		if (stop == 1) {
-			//do nothing
-		}
-		else {
-			instapaperHTML[loop_counter] = instapaperPageHTMLString;                                    
-		}
-		loop_counter++;
-	}
-	
-	if (notloggedin == true) {
-		return ["not logged in"];
-	}
-	if (noarticles == true) {
-		return ["no articles"];
-	}
-	
-	if (foldersToSync) {
-		console.log("well, folderstosync exists... that's a start");
-		for (i in foldersToSync) {
-			console.log("loopin for each folder");
-			folderNum = foldersToSync[i];
-			console.log("folder: " + folderNum);
-			loop_counter = 1;
-			
-			stop = false;
-			
-			while (stop != true) {
-				var instapaperPage = new XMLHttpRequest();
-				try {
-					instapaperPage.open("GET", "http://www.instapaper.com/u/folder/" + folderNum + "/lol/" + loop_counter, false);
-					instapaperPage.send();
-				}
-				catch(err) {
-					console.log("Error description: " + err.description);
-				}
-				
-				var instapaperPageHTMLString = new String();
-				var instapaperPageHTMLString = instapaperPage.responseText;
-				
-				//First, check to make sure there's items on the page. If not, stop.
-
-				if (instapaperPageHTMLString.search("No articles in this folder.") != -1) {
-					//no articles saved *on this page*
-					stop = true
-				}
-				if (stop != true) {
-					instapaperHTML[instapaperHTML.length + 1] = instapaperPageHTMLString;                  
-				}
-				loop_counter++;
-			}
-		}
-	}
-	
-	return instapaperHTML;
-}
-//this function scrapes and returns the urls on each page downloaded
-function scrapeURLs(instapaperPagesHTML) {
-	var instapaperURLs = new Array();
-
-	var loop_counter = 1;
-	var num_urls = 0;
-	
-	for (loop_counter in instapaperPagesHTML) {
-		var instapaperPageStringUnescaped = instapaperPagesHTML[loop_counter];
-		var instapaperPageString = instapaperPageStringUnescaped.replace(/&/gi, "&amp;");
-		
-		parser = new DOMParser();
-		
-		instapaperPage = parser.parseFromString(instapaperPageString,"text/xml");
-		
-		links = instapaperPage.getElementsByTagName("a");
-		
-		for (i=0;i<links.length;i++) {
-			url = links[i].getAttribute("href");
-			if (url.startsWith("/text") == true || url.startsWith("/go") == true) {
-				instapaperURLs[num_urls] = url;
-				num_urls++;
-			}
-		}
-	}
-	instapaperURLs.reverse();
-	return instapaperURLs;
-}
-function scrapeDetails(instapaperPagesHTML) {
-	
-	//this array holds the details objects for each page
-	var instapaperDetails = new Array();
-	var num_details = 0;
-	var loop_counter = 1;
-	
-	for (loop_counter in instapaperPagesHTML) {
-		
-		//escape out the html of the page so it parses right
-		var instapaperPageStringUnescaped = instapaperPagesHTML[loop_counter];
-		var instapaperPageString = instapaperPageStringUnescaped.replace(/&/gi, "&amp;");
-		
-		//validation issue
-		instapaperPageString = instapaperPageString.replace("<br/<br/>","<br/><br/>")
-		
-		parser = new DOMParser();
-		
-		instapaperPage = parser.parseFromString(instapaperPageString,"text/xml");
-		
-		allDivs = instapaperPage.getElementsByTagName("div");
-		
-		//traverse until we find the bookmark list
-		for (i=0;i<allDivs.length;i++) {
-			if (allDivs[i].getAttribute("id") == "bookmark_list") {
-				bookmark_list = allDivs[i];
-			}
-		}
-		
-		listDivs = bookmark_list.getElementsByTagName("div");
-		
-		//WHY IS THIS INCRIMENTED += 2? IT IS A MYSTERY. but it works. ugh, f this codebase
-		//for each item in the list
-		for (i=0;i<listDivs.length;i += 2) {
-			if (listDivs[i].getAttribute("class") != null) {
-				if (listDivs[i].getAttribute("class").indexOf("tableViewCell") != 1) {
-					
-					var divUrls = listDivs[i].getElementsByTagName("a");
-
-					//for each url in the div
-					for (i2 = 0; i2<divUrls.length; i2++) {
-						url = divUrls[i2].getAttribute("href");
-						if (url.startsWith("/") == false && url.startsWith("#") == false && url != null) {
-							instapaperDetails[num_details] = new Object();
-
-							instapaperDetails[num_details].title = divUrls[i2].childNodes[0].nodeValue;
-							
-							var divDivs = listDivs[i].getElementsByTagName("div");//this is a hilarious name but it just means the divs within the div that we picked out oh gosh this is dumb
-							
-							for (i3=0;i3<divDivs.length;i3++) { //this is some inception-level looping right here
-								if (divDivs[i3].getAttribute("class") == "summary") {
-									instapaperDetails[num_details].description = divDivs[i3].childNodes[0].nodeValue;
-								}
-							}
-							num_details++;
-						}
-					}
-				}
-			}
-		}
-		
-	}
-	instapaperDetails.reverse();
-	
-	return instapaperDetails;
-}
-//this function scrapes for html of a url
-function scrapePage(id,url) {
-	var scraper = new XMLHttpRequest();
-	try {
-		scraper.open("GET", "http://www.instapaper.com" + url, false);
-		scraper.send();
-	}
-	catch(err) {
-		console.log("Error description: " + err.description);
-	}
-	
-	if (scraper.status == 400) {
-		return "400";
-	}
-	
-	scraperString = scraper.responseText;
-
-	html = scraperString;
-	
-	//Need to remove the script part of the html doc so that we can parse it correctly.
-	scriptStartPos = scraperString.search("<script");
-	scriptEndPos = scraperString.search("</script");
-	
-	imageScraperString = scraper.responseText.substring(0,scriptStartPos) + scraper.responseText.substring(scriptEndPos+9);
-	imageScraperString = imageScraperString.replace(/&/gi, "&amp;");
-	
-	parser = new DOMParser();
-	scraperParser = parser.parseFromString(imageScraperString,"text/xml");
-	
-	if (saveImagesOption == "true") {
-		scrapeImages(id,url,scraperParser);
-	}
-	
-	return html;
-}
 
 function scrapeImages(oid,url,html) {
 	id = parseInt(oid) + 1
@@ -548,7 +309,9 @@ function syncSuccessOverlay() {
 		html = "<div id='overlayHeader'>Sync finished.</div><div id='overlayText'>Redirecting...</div>";
 		renderOverlay(html);
 		console.log("REDIRECT TRIGGERED");
-		setTimeout('redirectHome()',2000);
+		if (disableRedirect == false) {
+			setTimeout('redirectHome()',2000);
+		}
 	}
 	else {
 		syncError400Overlay();
@@ -592,7 +355,10 @@ function removeOverlay() {
 
 //this space intentionally left blank. here's what actually first
 
-pages.setup();
+database.setup();
+function pagesLoaded() {
+	sync();
+}
 
 //window.onload = sync;
 
