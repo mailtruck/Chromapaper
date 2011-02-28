@@ -21,36 +21,6 @@
 		<script src="script/database.js" type="text/javascript"></script>
 		<script type="text/javascript">
 		
-			// TO-DO: Make the HTML of the page dynamic based on the options.
-		
-			var pages = {
-				setup: function() {	
-					pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
-					pages.db.transaction(function(tx) {
-						tx.executeSql("create table if not exists " +
-							"pages(id integer primary key asc, article_title string, url string, html string, available string, description string, images string)",
-							[],
-							function() {console.log("Created/connected to DB");}
-							);
-					});
-				},
-				reset: function() {
-					console.log("in pages.reset. i'm sure it worked bro");
-					pages.db.transaction(function(tx) {
-						tx.executeSql('drop table pages',
-							[],
-							null,
-							pages.onError);
-					});
-					pages.db.transaction(function(tx) {
-						tx.executeSql('drop table images',
-							[],
-							null,
-							pages.onError);
-					});
-				}
-			}
-			
 			// Option object:
 			// name - name of option within localStorage
 			// type - right now, only "checkbox"... mostly here for future additions
@@ -282,7 +252,7 @@
 				//reset saved folders option
 				//reset saved articles option
 			}
-			
+			database.setup();
 			window.onload = createOptions;
 		</script>
 	</head>
