@@ -1,33 +1,5 @@
-//note to anyone who stumbles on this: yeah, it's pretty messy. A cleanup is on my todo list :)
-
 var debug = true; //disables the redirect from chromapaper icon->instapaper.com when online
 var online = false;
-//options - rememeber, even "booleans" are just strings in localStorage!
-
-/*var pages = {
-	setup: function() {	
-		pages.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
-		pages.db.transaction(function(tx) {
-			tx.executeSql("create table if not exists " +
-				"pages(id integer primary key asc, article_title string, url string, html string, available string, description string, images string)",
-				[],
-				function() {console.log("Created/connected to DB");}
-				);
-		});
-	},
-	list: function() {
-		pages.db.transaction(function(tx) {
-			tx.executeSql(
-				"select * from pages order by id desc",
-				[],
-				renderList,
-				pages.onError);
-		});
-	},
-	onError: function(tx,error) {
-		console.log("Error occured: ", error.message);
-	}
-};*/
 
 function renderList(tx,results) {
 	if (results.rows.length == 0) {
@@ -104,4 +76,6 @@ function removeOverlay() {
 }
 
 database.setup();
-database.list();
+function pagesLoaded() {
+	database.list();
+}

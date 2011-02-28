@@ -1,7 +1,7 @@
 var curPage = 1;
 var pages = 0;
 var scrollBy = 0;
-
+var id;
 var resized = false;
 
 //options - rememeber, even "booleans" are just strings in localStorage!
@@ -161,7 +161,8 @@ function getElementsByAttribute(oElm, strTagName, strAttributeName, strAttribute
 console.log(location);
 
 database.setup();
-var h = getUrlVars();
-var id = h["id"];
-read(id);
-
+function pagesLoaded() {
+	var h = getUrlVars();
+	id = h["id"];
+	read(id);
+}
