@@ -37,13 +37,53 @@ var sync = {
 			return;
 		}
 		details = instapaperScraper.getDetails(urls);
+		
+		dbSync.start();
 	}
+	
 }
 
 database.setup();
 function pagesLoaded() {
 	sync.start();
 }
+
+/* dbSync
+articles_to_save
+articles_to_archive
+articles_saved
+articles_archived
+images_to_save?
+
+----synchronous
+for each page
+	check if saved-> call back saveArticle
+----
+save article */
+
+var dbSync = {
+	var articles_to_save;
+	var articles_to_archive;
+	
+	var articles_saved;
+	var articles_archived;
+	
+	var status = 'continue'
+	
+	function start() {
+		for (url in sync.urls) {
+			//this basically queues each query to be acted on once the loop is complete...
+			while (dbSync.status == 'continue') {
+				dbSync.checkIn(sync.urls[url]);
+			}
+		}
+		
+		dbSync.checkArchive();
+	}
+	
+	
+}
+
 
 /* instapaperScraper
 

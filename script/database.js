@@ -3,7 +3,7 @@ var database = {
 	/* Global Functions */
 	setup: function() {        
 		database.db = openDatabase('instapaper_reader', '1.0', 'Instapaper Articles', 1024 * 1024);
-		pages.db = database.db
+		//pages.db = database.db
 		database.db.transaction(function(tx) {
 			tx.executeSql("create table if not exists " +
 				"pages( \
@@ -90,9 +90,9 @@ var database = {
 	save: function(page) {
 		database.db.transaction(function(tx) {
 			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
-			[page.title, page.url, page.html, page.description],
-			savedPage,
-			database.onError
+				[page.title, page.url, page.html, page.description],
+				function (tx, result, page) {savedPage(page);},
+				database.onError);
 		});
 	},
 	
