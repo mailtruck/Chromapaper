@@ -1,23 +1,5 @@
 /*
 SYNC.JS REWRITE PROJECT
-
-b. For each page -
-	- Compare to the pages saved (CheckPage)
-	-
-Split into several namespaces to cut down on globals:
-	instapaperScraper.*:
-		.urls - scrapes & returns all the urls on the page
-		.details
-	
-	pageScraper.*:
-		
-		
-	dbCallbacks.*:
-		
-	overlays.*:	
-		.sync
-		.noPages
-		.notLoggedIn
 */
 
 
