@@ -181,7 +181,7 @@
 			function reset() {
 				var r=confirm("Are you sure you want to reset? You will not be able to access your articles until next sync!");
 				if (r==true) {
-					pages.reset();
+					database.reset();
 				}
 			}
 			
@@ -192,7 +192,7 @@
 				}
 			}
 			
-			pages.setup();
+			database.setup();
 			
 			var options = new Array;
 			
