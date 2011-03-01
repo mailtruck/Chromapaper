@@ -72,12 +72,12 @@ function renderPage(tx,results) {
 	
 	if (paginationSetting == "true") {
 		//ghetto javascript "include"
-		document.write('<script type="text/javascript" src="' + 'script/pagination.js' + '"></scr' + 'ipt>'); 
+		document.write('<script type="text/javascript" src="' + 'script/content_script/pagination.js' + '"></scr' + 'ipt>'); 
 	}
 	else {
 		loadFont();
 		saveFont();
-		document.write('<script type="text/javascript" src="' + 'script/scrollTracking.js' + '"></scr' + 'ipt>');
+		document.write('<script type="text/javascript" src="' + 'script/content_script/scrollTracking.js' + '"></scr' + 'ipt>');
 	}
 }
 

@@ -85,18 +85,6 @@ var database = {
 		});
 	},
 	
-	/* Sync Functions */
-	
-	save: function(page) {
-		database.db.transaction(function(tx) {
-			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
-				[page.title, page.url, page.html, page.description],
-				function (tx, result, page) {savedPage(page);},
-				database.onError);
-		});
-	},
-	
-	
 	onError: function(tx,error) {
 		console.log("Error occured: ", error.message);
 	}
