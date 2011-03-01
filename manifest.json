@@ -22,7 +22,7 @@
 	"content_scripts": [
 		{
 			"matches": ["http://www.instapaper.com/*","http://instapaper.com/*"],
-			"js": ["script/syncButton.js","script/pagination.js","script/scrollTracking.js","script/syncFolderOption.js"],
+			"js": ["script/content_script/syncButton.js","script/content_script/pagination.js","script/content_script/scrollTracking.js","script/content_script/syncFolderOption.js"],
 			"run_at": "document_end" 
 		}
 	]
