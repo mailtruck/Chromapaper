@@ -125,21 +125,21 @@ var pages = {
 			"select * from pages",
 			[],
 			function (tx, results) {
-				if (syncFailed == false) {
-					if (syncing == false) {
-						saveDone = true;
+				if (syncFailed == false) { //why is this called?
+					if (syncing == false) { //...does this maybe check if there aren't any to be archived??
+						saveDone = true; //ugh. just gonna ignore this bit
 					}
-					savedPageCount = results.rows.length;
-					if (savedPageCount > 0) {
-						for (i = 0; i <= (savedPageCount-1); i++) {
-							var archived = true;
+					savedPageCount = results.rows.length; //how many pages are saved total
+					if (savedPageCount > 0) { //if there's any - needed to not fatal out if there's none saved
+						for (i = 0; i <= (savedPageCount-1); i++) { //for each page saved
+							var archived = true; 
 							url = results.rows.item(i).url;
-							for (i2 in scrapedURLs) {
+							for (i2 in scrapedURLs) { //loop through all urls. if there's a match, then it should still be in
 								if (url == scrapedURLs[i2]) {
 									archived = false;
 								}
 							}
-							if (archived == true) {
+							if (archived == true) { //so if it wasn't found on the url list, means it should be archived
 								archivedIds[archivedNum] = results.rows.item(i).id;
 								archivedNum++;
 								

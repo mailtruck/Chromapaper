@@ -39,7 +39,6 @@ var options = new function() {
 	}
 
 	var folders_to_sync = localStorage['folders'];
-	console.log(folders_to_sync);
 	if (folders_to_sync) {
 		this.folders_to_sync = folders_to_sync.split(','); //gahhhhh
 	}
@@ -106,9 +105,9 @@ var syncProgress = new function() {
 	
 	this.check = function() {
 		if (this.url_check_done == true && this.saves_done == true &&  this.archives_done == false) {
-			archivesDB.start();
+			archiveDB.start();
 		}
-		else if (this.url_check_done == true && this.saves_done == true && this.archives_done == true && this.images_done == true && this.status == "ok") {
+		else if (this.url_check_done == true && this.saves_done == true && this.archives_done == true && this.status == "ok") {
 			console.log("all done!!");
 		}
 	}
@@ -124,7 +123,8 @@ start - called to begin process
 
 var saveDB = new function() {
 	this.pages_to_save = new Array();
-	
+	this.pages_saved_num = 0;
+
 	var status = 'continue';
 	
 	this.start = function() {
@@ -146,11 +146,14 @@ var saveDB = new function() {
 							title: sync.details[i].title,
 							id: i
 						}
-
 						saveDB.pages_to_save.push(page);
 					}
 					if (i == (sync.urls.length - 1)) {
-						console.log("hey hit the last one!!");
+						if (saveDB.pages_to_save.length == 0) {
+							syncProgress.saves_done = true;
+							syncProgress.url_check_done = true;
+							syncProgress.check();
+						}
 						syncProgress.url_check_done = true;
 						scrapePages(saveDB.pages_to_save);
 					}
@@ -164,15 +167,21 @@ var saveDB = new function() {
 		database.db.transaction(function(tx) {
 			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
 				[page.title, page.url, page.html, page.description],
-				function () {console.log("saved page");},
+				function () {
+					if (saveDB.pages_saved_num == (saveDB.pages_to_save.length - 1)) {
+						syncProgress.saves_done = true;
+						syncProgress.check();
+					}
+					saveDB.pages_saved_num++
+				},
 				database.onError);
 		});
 	};
 	var scrapePages = function (pages_to_save) {
-		for (i in pages_to_save) {
-			page = pages_to_save[i];
+		for (i in saveDB.pages_to_save) {
+			page = saveDB.pages_to_save[i];
 
-			page.html = scrapePage(page.url);
+			page.html = scrapePage(page.url, i);
 
 			if (page.html == "400") {
 				//overlay.sync.failed.400
@@ -183,14 +192,9 @@ var saveDB = new function() {
 			}
 
 			savePage(page);
-			console.log(page);
 			//overlay.sync.savedPage(page)
 		}
-		if (i == (pages_to_save.length - 1)) {
-			console.log("hey hit the page to save!!");
-			syncProgress.saves_done = true;
-			syncProgress.check();
-		}
+		
 	};
 }
 
@@ -208,8 +212,55 @@ var archiveDB = new function() {
 	this.pages_to_archive = new Array();
 
 	this.start = function () {
-		
-	}
+		database.db.transaction(function(tx) {
+			tx.executeSql(
+				"select * from pages",
+				[],
+				function (tx, results) {
+					for (i=0;i < results.rows.length; i++) {
+						var page_found = false;
+						for (i2 in sync.urls) {
+							if (sync.urls[i2] == results.rows.item(i).url) {
+								page_found = true;
+							}
+						}
+						if (page_found == false) {
+							archiveDB.pages_to_archive.push(results.rows.item(i));
+						}
+						
+					}
+					i = 0; //might not need
+					if (archiveDB.pages_to_archive.length > 0) {
+						for (i in archiveDB.pages_to_archive) {
+							remove(archiveDB.pages_to_archive[i], i);
+						}
+					}
+					else {
+						syncProgress.archives_done = true;
+						syncProgress.check();
+					}
+				},
+				database.onError
+			)
+		});
+	};
+	var remove = function(page, pages_saved) {
+		database.db.transaction(function(tx) {
+			tx.executeSql(
+				"DELETE from pages where id=?",
+				//"SELECT * from pages where id=?", 
+				[page.id],
+				function (tx, results) {
+					if (pages_saved == (archiveDB.pages_to_archive.length - 1)) {
+						syncProgress.archives_done = true;
+						syncProgress.check();
+					}
+				},
+				database.onError
+			)
+		}); 	
+	}; 
+
 }
 
 
@@ -235,7 +286,6 @@ var instapaperScraper = new function() {
 		//loop this for each page
 		 while (status == "continue") {
 			status = scrapePage("http://www.instapaper.com/u/" + (instapaper_html.length + 1)); //this is a little weird... scrape page automatically adds it to instapaper_html, so we return the status to decide if we should keep looping
-			console.log(status);
 		}
 		if (status != 'done') {
 			return status; //means not logged in or no pages
@@ -259,7 +309,6 @@ var instapaperScraper = new function() {
 		return instapaper_html;
 	}
 	var scrapePage = function(url) {	
-		console.log(url);
 		var instapaper_page = new XMLHttpRequest();
 		try {
 			instapaper_page.open("GET", url, false);
@@ -282,7 +331,6 @@ var instapaperScraper = new function() {
 		} 
 		else if (instapaper_page_html_string.search("No articles saved.") != -1 || instapaper_page_html_string.search("No articles in this folder.") != -1) {
 			//no pages saved *on this page* so we're done!
-			console.log("all done!");
 			status = "done";
 		}
 		else {
