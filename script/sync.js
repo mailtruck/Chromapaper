@@ -15,9 +15,9 @@ folders_to_sync - comma-separate list of ids of folders to be synced. Eventually
 */
 
 var options = new function() {
-	var save_images_option = localStorage['saveImagesOn']
-	if (!save_images_option) {
-		save_images_option = "false";
+	var save_images = localStorage['saveImagesOn']
+	if (!save_images) {
+		save_images = "false";
 	}
 
 	var folders_to_sync = localStorage['folders'];
@@ -42,7 +42,7 @@ details - list of details
 var sync = new function() {
 	
 	this.start = function() {
-		//overlay.sync();
+		overlay.start();
 
 		this.pages = instapaperScraper.getListHtml();
 		if (this.pages == "no pages saved") {
@@ -57,8 +57,6 @@ var sync = new function() {
 		this.details = instapaperScraper.getDetails(this.pages);
 		
 		saveDB.start();
-
-		//archiveDB.start();
 	};
 	
 }
@@ -90,7 +88,11 @@ var syncProgress = new function() {
 			archiveDB.start();
 		}
 		else if (this.url_check_done == true && this.saves_done == true && this.archives_done == true && this.status == "ok") {
+			overlay.success();
 			console.log("all done!!");
+		}
+		else if (this.status == '400') {
+			overlay.error400();
 		}
 	}
 }
@@ -110,6 +112,7 @@ var saveDB = new function() {
 	var status = 'continue';
 	
 	this.start = function() {
+		overlay.scrapingStarted();
 		for (i in sync.urls) {
 			//this basically queues each query to be acted on once the loop is complete...
 			checkIn(i);
@@ -146,6 +149,7 @@ var saveDB = new function() {
 	};
 
 	var savePage = function (page) {
+		
 		database.db.transaction(function(tx) {
 			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
 				[page.title, page.url, page.html, page.description],
@@ -160,13 +164,13 @@ var saveDB = new function() {
 		});
 	};
 	var scrapePages = function (pages_to_save) {
+
 		for (i in saveDB.pages_to_save) {
 			page = saveDB.pages_to_save[i];
 
-			page.html = scrapePage(page.url, i);
+			page.html = scrapePage(page);
 
 			if (page.html == "400") {
-				//overlay.sync.failed.400
 				syncProgress.saves_done = true;
 				syncProgress.status = "400";
 				syncProgress.check();
@@ -174,9 +178,20 @@ var saveDB = new function() {
 			}
 
 			savePage(page);
-			//overlay.sync.savedPage(page)
+
 		}
 		
+	};
+	this.saveImage = function(id, url, src, imageBlob) {
+		database.db.transaction(function(tx) {
+			tx.executeSql(
+				"INSERT INTO images (id, url, src, data) values (?, ?, ?, ?)",
+				[id, url, src, imageBlob],
+				function (tx,results) {
+					console.log("saved image " + src);
+				},
+				database.onError);
+		});
 	};
 }
 
@@ -199,6 +214,7 @@ var archiveDB = new function() {
 				"select * from pages",
 				[],
 				function (tx, results) {
+					overlay.archivingStarted();
 					for (i=0;i < results.rows.length; i++) {
 						var page_found = false;
 						for (i2 in sync.urls) {
@@ -420,10 +436,10 @@ var instapaperScraper = new function() {
 
 
 
-function scrapePage(url) {
+function scrapePage(page) {
 	var scraper = new XMLHttpRequest();
 	try {
-		scraper.open("GET", "http://www.instapaper.com" + url, false);
+		scraper.open("GET", "http://www.instapaper.com" + page.url, false);
 		scraper.send();
 	}
 	catch(err) {
@@ -437,7 +453,7 @@ function scrapePage(url) {
 	scraperString = scraper.responseText;
 
 	html = scraperString;
-	/*
+	
 	//Need to remove the script part of the html doc so that we can parse it correctly.
 	scriptStartPos = scraperString.search("<script");
 	scriptEndPos = scraperString.search("</script");
@@ -448,9 +464,132 @@ function scrapePage(url) {
 	parser = new DOMParser();
 	scraperParser = parser.parseFromString(imageScraperString,"text/xml");
 	
-	if (saveImagesOption == "true") {
-		scrapeImages(id,url,scraperParser);
+	if (options.save_images == "true") {
+		scrapeImages(page.id,page.url,scraperParser);
 	}
-	*/
+	
 	return html;
 }
+
+
+function scrapeImages(oid,url,html) {
+	id = parseInt(oid) + 1
+	var images = html.getElementsByTagName("img");
+	for (curImage = 0;curImage < images.length;curImage++) {
+		imgSrc = images[curImage].getAttribute("src");
+		
+		var image = new XMLHttpRequest();
+		image.open("GET",imgSrc,false);
+		image.overrideMimeType('text/plain; charset=x-user-defined');
+		image.send();
+		
+		blobEncoded = Base64.encodeBinary(image.responseText); 
+		
+		saveDB.saveImage(id, url, imgSrc, blobEncoded);
+	}
+}
+
+
+
+
+/* Overlay functions */
+
+var overlay = new function() {
+
+	this.start = function() {
+		html = "<div id='overlayHeader'>Syncing...</div><div id='overlayText'>Loading your Instapaper list...</div>";
+		renderOverlay(html);
+	};
+
+
+	this.noArticles = function() {
+		//removeOverlay();
+		html = "<div id='overlayHeader'>No pages!</div><div id='overlayText'>You have no pages to be synced in your Instapaper list.</div>";
+		updateOverlay(html);
+	}
+	this.loggedOut = function () {
+		//removeOverlay();
+		html = "<div id='overlayHeader'>You are logged out!</div><div id='overlayText'>You are either logged out or have lost your internet connection.</div>";
+		updateOverlay(html);
+	}
+
+	this.scrapingStarted = function() {
+		updateOverlay("<div id='overlayHeader'>Syncing...</div><div id='overlayText'>Downloading & saving pages...</div>");
+	}
+	this.archivingStarted = function() {
+		updateOverlay("<div id='overlayHeader'>Syncing...</div><div id='overlayText'>Archiving pages...</div>")
+	}
+	//unused for now... doesn't update until last page. weird.
+
+	/*this.pageDownloaded = function(page) {
+		console.log("trying to render pageDownloaded for:");
+		console.log(page);
+
+		html = "<div id='overlayHeader'>Downloading...</div><div id='overlayText'>";
+		html += '"' + page.title.substr(0,70);
+		if (page.title.substr(0,50) != page.title) {
+			html += '...';
+		}
+		html += '"</div>';
+		updateOverlay(html);
+	};
+	this.pageSaved = function(page) {
+		console.log("trying to render pageSaved for:");
+		console.log(page);
+
+		html = "<div id='overlayHeader'>Saving...</div><div id='overlayText'>";
+		html += '"' + page.title.substr(0,70);
+		if (page.title.substr(0,50) != page.title) {
+			html += '...';
+		}
+		html += '"</div>';
+		updateOverlay(html);
+	};
+	this.pageArchived = function(page) {
+		console.log("trying to render pageArchived for:");
+		console.log(page);
+
+		html = "<div id='overlayHeader'>Archiving...</div><div id='overlayText'>";
+		html += '"' + page.title.substr(0,70);
+		if (page.title.substr(0,50) != page.title) {
+			html += '...';
+		}
+		html += '"</div>';
+		updateOverlay(html);
+	};*/
+
+
+	this.error400 = function() {
+		html = "<div id='overlayHeader'>Syncing error 400</div><div id='overlayText'>Syncing was only partially successful. Please wait a few minutes and refresh to finish syncing. <a href='error400.html'>Why does this happen?</a></div>"
+		updateOverlay(html);
+	};
+	this.success = function() {
+		html = "<div id='overlayHeader'>Sync finished.</div><div id='overlayText'>Redirecting...</div>";
+		updateOverlay(html);
+		console.log("REDIRECT TRIGGERED");
+		//setTimeout('redirectHome()',2000);
+	};
+
+	var redirectHome = function() {
+		window.location = "http://www.instapaper.com";
+	}
+	var renderOverlay = function(html) {
+		console.log('rendering ' + html)
+		//overlay the body with grey
+		var overlay = document.createElement("div");
+		overlay.setAttribute("id","overlay");
+		overlay.setAttribute("class", "overlay");
+		
+		document.body.appendChild(overlay);
+		
+		//create text box
+		var textBox = document.createElement("div");
+		textBox.setAttribute("id","overlayContents");
+		textBox.innerHTML = html;
+		document.body.appendChild(textBox);
+	};
+	var updateOverlay = function(html) {
+		var textBox = document.getElementById('overlayContents')
+		textBox.innerHTML = html;
+	}
+};
