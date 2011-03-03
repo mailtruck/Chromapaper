@@ -8,63 +8,47 @@
 		<script type="text/javascript" src="lib/family.js"></script>
 		<script type="text/javascript" src="lib/familyLinker.js"></script>
 		<script type="text/javascript" src="lib/familyBold.js"></script>
-		<script type="text/javascript" src="lib/apiRemote.js"></script>
-		<script type="text/javascript" src="lib/options.js"></script>
-		<script type="text/javascript" src="lib/opts.js"></script>
 		<link rel="stylesheet" href="lib/styles.css" />
 		<link rel="stylesheet" href="lib/rcell.css" />
 		<link rel="stylesheet" href="lib/linker.css" />
-		<link rel="stylesheet" href="lib/jquery.css" />
 		
 		<link rel="stylesheet" type="text/css" href="style/main.css">
 		
 		<script src="script/includes/database.js" type="text/javascript"></script>
+		<script src="script/includes/options.js" type="text/javascript"></script>
+
 		<script type="text/javascript">
-		
-			// Option object:
-			// name - name of option within localStorage
-			// type - right now, only "checkbox"... mostly here for future additions
-			// defaultStatus - the default status of the object (string always!)
-			// inputId - the id of the input tag this object's tied to
-			// position - first, last, [middle] - changes if the corners are rendered on this list item
-			var Option = function (args) {
-				this.name = args.name;
-				this.type = args.type;
-				this.defaultStatus = args.defaultStatus;
+	
+			var renderOption = function (option) {
 				
-				this.inputId = args.name;
-				this.header = args.header;
-				this.description = args.description;
-				this.position = args.position;
-				
-				console.log(this.name + " " + this.type + " " + this.defaultStatus + " " + this.inputId);
-				
+				console.log(option);
+
 				//changes the checkbox or field to reflect the loaded option
-				this.changeDisplayedOption = function (newStatus) {
-					if (this.type == "checkbox") {
+				var changeDisplayedOption = function (newStatus) {
+					if (option.type == "checkbox") {
 						if (newStatus == "true") {
-							document.getElementById(this.inputId).checked = true;
+							document.getElementById(option.name).checked = true;
 						}
 						else if (newStatus == "false") {
-							document.getElementById(this.inputId).checked = false;
+							document.getElementById(option.name).checked = false;
 						}
 					}
 				}
 				
 				//updates the option
-				this.update = function (newStatus) {
-					localStorage[this.name] = newStatus;
-					this.changeDisplayedOption(newStatus);
+				var update = function (newStatus) {
+					option.set(newStatus);
+					changeDisplayedOption(newStatus);
 				}
 				
 				//for checkboxes only - just updates to the opposite of what it was
-				if (this.type == "checkbox") {
-					this.toggle = function () {
-						if (localStorage[this.name] == "true") {
-							this.update("false");
+				if (option.type == "checkbox") {
+					option.toggle = function () {
+						if (option.get() == "true") {
+							update("false");
 						}
-						else if (localStorage[this.name] == "false") {
-							this.update("true");
+						else if (option.get() == "false") {
+							update("true");
 						}
 					}
 				}
@@ -73,12 +57,12 @@
 				
 				//First: load the option's status. If there is none, give it the default.
 				
-				var loadedStatus = localStorage[this.name];
+				var loadedStatus = localStorage[option.name];
 				if (!loadedStatus) {
-					this.status = defaultStatus
+					option.status = defaultStatus
 				}
 				else {
-					this.status = loadedStatus;
+					option.status = loadedStatus;
 				}
 				
 				//Second: render the option.
@@ -90,19 +74,19 @@
 				
 				//set class
 				optionElm = document.createElement('div');
-				if (this.position == "first") {
+				if (option.position == "first") {
 					optionElm.setAttribute("class","tableViewCell tableViewCellFirst")
 				}
-				else if (this.position == "middle") {
+				else if (option.position == "middle") {
 					optionElm.setAttribute("class","tableViewCell")
 				}
-				else if (this.position == "last") {
+				else if (option.position == "last") {
 					optionElm.setAttribute("class","tableViewCell tableViewCellLast")
 				}
 				
 				//set onClick
-				if (this.type == "checkbox") {
-					optionElm.setAttribute("onclick", "options." + this.name + ".toggle()");
+				if (option.type == "checkbox") {
+					optionElm.setAttribute("onclick", "options." + option.name + ".toggle()");
 				}
 				
 				//color/style stuff
@@ -139,13 +123,13 @@
 				
 				header = document.createElement("span");
 				header.setAttribute("class","tableViewCellTitleLink");
-				header.innerHTML = "<b>" + this.header + "</b>";
+				header.innerHTML = "<b>" + option.header + "</b>";
 				titleRow.appendChild(header);
 				
-				if (this.type=="checkbox") {
+				if (option.type == "checkbox") {
 					input = document.createElement("input");
 					input.setAttribute("type","checkbox");
-					input.setAttribute("id",this.inputId);
+					input.setAttribute("id",option.name);
 					input.setAttribute("value","yes1");
 				}
 				titleRow.appendChild(input);
@@ -155,29 +139,32 @@
 				
 				summary = document.createElement("div");
 				summary.setAttribute("class","summary");
-				summary.innerHTML = this.description;
+				summary.innerHTML = option.description;
 				titleRow.appendChild(summary);
 				
-				if (this.position=='last') {
+				if (option.position=='last') {
 					breakLine = document.createElement('br');
 					optionsList.appendChild(breakLine);
 				}
 				
 
-				var loadedStatus = localStorage[this.name];
+				var loadedStatus = localStorage[option.name];
 				if (!loadedStatus) {
 					//first run of options, hasn't been set - give it the default
-					this.update(this.defaultStatus);
+					update(option.defaultStatus);
 				}
 				else {
-					this.changeDisplayedOption(loadedStatus);
-					this.actualStatus = loadedStatus
+					changeDisplayedOption(loadedStatus);
+					option.actualStatus = loadedStatus
 				}
-				
-				
-
 			}
 			
+			function renderOptions() {
+				for (i in options) {
+					renderOption(options[i]);
+				}
+			}
+
 			function reset() {
 				var r=confirm("Are you sure you want to reset? You will not be able to access your articles until next sync!");
 				if (r==true) {
@@ -193,67 +180,7 @@
 			}
 			
 			database.setup();
-			
-			var options = new Array;
-			
-			function createOptions() {
-				// to-do: put these options in an array, since for each will be handy...
-				
-				//create header: sync options
-				console.log("creating options");
-				
-				options.syncButtonOn = new Option({
-					name:"syncButtonOn",
-					type:"checkbox",
-					defaultStatus: "true",
-					position: "first",
-					header: "Enable offline sync button", 
-					description: "Disable if you're not using the offline features of Chromapaper."
-				});
-				
-				options.scrollTrackingOn = new Option({
-					name:"scrollTrackingOn",
-					type:"checkbox",
-					defaultStatus:"false",
-					
-					position:"middle",
-					header: "Save scroll position",
-					description: "Saves the scroll position you leave an article at, and reloads to that position when the article is loaded."
-				});
-				options.saveImagesOn = new Option({
-					name:"saveImagesOn",
-					type:"checkbox",
-					defaultStatus:"false",
-					
-					position:"last", 
-					header: "Download Images",
-					description: "Downloads article images in offline view. Only works with some images for now; the rest just show up broken."
-				});
-				
-				options.paginationOnlineOn = new Option({
-					name:"paginationOnlineOn",
-					type:"checkbox",
-					defaultStatus:"false",
-					
-					position:"first",
-					header:"Offline two-column pagination",
-					description:"Use left and right keys to navigate."
-				});
-				options.paginationOn = new Option({
-					name:"paginationOn",
-					type:"checkbox",
-					defaultStatus:"false",
-					
-					position:"last",
-					header:"Online two-column pagination",
-					description:"Pagination in the online Instapaper text view."
-				});
-				
-				//reset saved folders option
-				//reset saved articles option
-			}
-			database.setup();
-			window.onload = createOptions;
+			window.onload = renderOptions;
 		</script>
 	</head>
 	

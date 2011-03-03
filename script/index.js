@@ -1,9 +1,5 @@
-//note to anyone who stumbles on this: yeah, it's pretty messy. A cleanup is on my todo list :)
-
 var debug = true;
 var online = false;
-
-//options - rememeber, even "booleans" are just strings in localStorage!
 
 function testOnline() {
 	var pingTest = new XMLHttpRequest();

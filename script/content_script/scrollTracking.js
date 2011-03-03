@@ -4,29 +4,27 @@ var online = false;
 var scrollTrackingSetting = "false";
 var scrollTimer;
 
+//document.write('<script type="text/javascript" src="' + chrome.extension.getURL('script/includes/options.js') + '"></scr' + 'ipt>'); 
+
 //coming from online
-if (location.host == "www.instapaper.com") {
+/*if (location.host == "www.instapaper.com") {
 	switch (location.pathname.split('/')[1]) {
 		case "text":
 		case "go":
-			chrome.extension.sendRequest({method: "getPaginationOnlineOption"}, function(response) {
-				paginationSetting = response.status;
-				if (!paginationSetting) {
-					paginationSetting = "false";
-				}
-				online = true;
-				if (paginationSetting == "false") {
-					chrome.extension.sendRequest({method: "getScrollTrackingOption"}, function(response) {
-						scrollTrackingSetting = response.status;
-						if (scrollTrackingSetting == "true") {
-							scrollTracking();
-						}
-					});	
-				}
+			
+			online = true;
+			chrome.extension.sendRequest({method: "testOption"}, function(response) {
+				console.log('recieved' + response)
 			});
+			console.log(options);
+			/*if (options.paginationOnlineOn.getRequest() == "false") {
+				if (options.scrollTrackingOn.getRequest() == "true") {
+					scrollTracking();
+				}
+			}
 			break;
 	}
-}
+}*/
 
 //coming from offline
 if (location.protocol == "chrome-extension:") {

@@ -1,19 +1,30 @@
 <html>
 	<head>
-		<script ="text/javascript">
-			chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-				if (request.method == "getPaginationOnlineOption")
-					sendResponse({status: localStorage['paginationOnlineOn']});
-				else if (request.method == "getPaginationOfflineOption")
-					sendResponse({status: localStorage['paginationOn']});
-				else if (request.method == "getScrollTrackingOption")
-					sendResponse({status: localStorage['scrollTrackingOn']});
-				else if (request.method == "getSyncButtonOption")
-					sendResponse({status: localStorage['syncButtonOn']});
-				else if (request.method == "getFolders") {
-					sendResponse({status: localStorage['folders']});
+		<script src="script/includes/options.js" type="text/javascript"></script>
+		<script type="text/javascript">
+			/* call options.createListeners() */
+			/*chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+				if (request.method == "optionsTest" && request.option == "test") {
+					console.log('lol');
+					sendResponse({status: 'it worked'})
 				}
-				else if (request.method == "addFolder") {
+			});*/
+
+			//CHANGE THIS so that the if statement is created under the if statement down there V
+			/*for (i in options) {
+				chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+					console.log('request recieved...');
+					console.log('asked for option ' + request.option + ' versus ' + options[i].name);
+					console.log('looking for method ' + request.method + ' versus ' + 'getOption');
+					if (request.method == 'getOption' && request.option == options[i].name) {
+						console.log('retrieved ' + options[i].name);
+						sendResponse({status: options[i].get()});
+					}
+				});
+				console.log('created method for ' + options[i].name)
+			}*/
+			chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+				if (request.method == "addFolder") {
 					folders = localStorage['folders'];
 					if (!folders) {
 						folders = new Array();
@@ -37,8 +48,14 @@
 					}
 					localStorage['folders'] = folders;
 				}
+				for (i in options) {
+					else if (request.method == 'getOption' && request.option == options[i].name) {
+						console.log('retrieved ' + options[i].name);
+						sendResponse({status: options[i].get()});
+					}
+				}
 				else
-					sendResponse({}); // snub them.
+					sendResponse({}); // snub them.*/
 			});
 		</script>
 	</head>

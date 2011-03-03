@@ -7,10 +7,6 @@ var resized = false;
 //options - rememeber, even "booleans" are just strings in localStorage!
 
 //true: pagination is on; false: pagination off
-paginationSetting = localStorage["paginationOn"];
-if (!paginationSetting) {
-	paginationSetting = "false";
-}
 
 /*
        +--------------------+
@@ -70,7 +66,7 @@ function renderPage(tx,results) {
 	newHtml = storyDivHtml.replace("’","'");
 	storyDiv.innerHTML = newHtml;
 	
-	if (paginationSetting == "true") {
+	if (options.paginationOn.get() == "true") {
 		//ghetto javascript "include"
 		document.write('<script type="text/javascript" src="' + 'script/content_script/pagination.js' + '"></scr' + 'ipt>'); 
 	}
@@ -157,8 +153,6 @@ function getElementsByAttribute(oElm, strTagName, strAttributeName, strAttribute
     }
     return arrReturnElements;
 }
-
-console.log(location);
 
 database.setup();
 function pagesLoaded() {

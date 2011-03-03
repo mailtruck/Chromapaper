@@ -5,17 +5,20 @@ var oldSize;
 
 var online;
 
+console.log("hey trying to paginate!!!")
+
 //coming from online
 if (location.host == "www.instapaper.com") {
 	switch (location.pathname.split('/')[1]) {
 		case "text":
 		case "go":
-			chrome.extension.sendRequest({method: "getPaginationOnlineOption"}, function(response) {
+			chrome.extension.sendRequest({method: "getOption", option:'syncButtonOn'}, function(response) {
+				console.log("testOption worked");
+				console.log(response.status);
 				paginationSetting = response.status;
 				if (!paginationSetting) {
 					paginationSetting = "false";
 				}
-				online = true;
 				isPaginateOn();
 			});
 			break;
