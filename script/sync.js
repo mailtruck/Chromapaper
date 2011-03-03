@@ -3,30 +3,13 @@ SYNC.JS REWRITE PROJECT
 */
 
 
-/*
-
-Options
-
-Contains the options taken from localStorage.
-
-save_images_option - should images be saved or not? Defaults false. 
-folders_to_sync - comma-separate list of ids of folders to be synced. Eventually will be replaced by an SQL table.
-
-*/
-
-var options = new function() {
-	var save_images = localStorage['saveImagesOn']
-	if (!save_images) {
-		save_images = "false";
-	}
-
-	var folders_to_sync = localStorage['folders'];
-	if (folders_to_sync) {
-		this.folders_to_sync = folders_to_sync.split(','); //gahhhhh
-	}
-	else {
-		this.folders_to_sync = ""
-	}
+//temporarily a global - too much effort to be rolled into options.js when it's going to be an sql table soon
+var folders_to_sync = localStorage['folders'];
+if (folders_to_sync) {
+	this.folders_to_sync = folders_to_sync.split(','); //gahhhhh
+}
+else {
+	this.folders_to_sync = ""
 }
 
 /*
@@ -464,7 +447,7 @@ function scrapePage(page) {
 	parser = new DOMParser();
 	scraperParser = parser.parseFromString(imageScraperString,"text/xml");
 	
-	if (options.save_images == "true") {
+	if (options.saveImagesOn.get() == "true") {
 		scrapeImages(page.id,page.url,scraperParser);
 	}
 	
