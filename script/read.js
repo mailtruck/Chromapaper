@@ -82,9 +82,6 @@ function replaceImage(tx,results) {
 		id = results.rows.item(0).id;
 		src = results.rows.item(0).src;
 		imageBlob = results.rows.item(0).data;
-		console.log(id);
-		console.log(src);
-		console.log(imageBlob);
 		
 		var storyImages = storyDiv.getElementsByTagName("img");
 		for (i = 0; i < storyImages.length; i++) {

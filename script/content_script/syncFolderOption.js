@@ -2,7 +2,7 @@ var folders;
 var folderId = location.pathname.split('/')[2];
 var folderExists = false;
 
-/*chrome.extension.sendRequest({method: "getFolders"}, function(response) {
+chrome.extension.sendRequest({method: "getFolders"}, function(response) {
 		folders = response.status;
 		if (folders) {
 			folders = folders.split(','); //basically, it's not returning a real array, just a comma-seperated string. don't ask why! no one knows
@@ -18,7 +18,7 @@ var folderExists = false;
 			syncFolderOption();
 		}
 	}
-);*/
+);
 
 
 

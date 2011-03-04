@@ -33,8 +33,8 @@ var defineOptions = function () {
 		description: "Downloads article images in offline view. Only works with some images for now; the rest just show up broken."
 	});
 
-	options.paginationOnlineOn = new Option({
-		name:"paginationOnlineOn",
+	options.paginationOn = new Option({
+		name:"paginationOn",
 		type:"checkbox",
 		defaultStatus:"false",
 		
@@ -42,8 +42,8 @@ var defineOptions = function () {
 		header:"Offline two-column pagination",
 		description:"Use left and right keys to navigate."
 	});
-	options.paginationOn = new Option({
-		name:"paginationOn",
+	options.paginationOnlineOn = new Option({
+		name:"paginationOnlineOn",
 		type:"checkbox",
 		defaultStatus:"false",
 		
@@ -51,6 +51,7 @@ var defineOptions = function () {
 		header:"Online two-column pagination",
 		description:"Pagination in the online Instapaper text view."
 	});
+
 }
 
 var Option = function (args) {
@@ -72,9 +73,11 @@ var Option = function (args) {
 
 	this.get = function() {
 		if (localStorage[this.name]) {
+			console.log('returning option ' + this.name + ', it is ' + localStorage[this.name])
 			return localStorage[this.name];
 		}
 		else {
+			console.log('returning default value')
 			return this.defaultStatus;
 		}
 	}
@@ -89,6 +92,7 @@ var Option = function (args) {
 		});
 	}
 	this.set = function(newStatus) {
+		console.log('attempting to set ' + this.name + ' to ' + newStatus)
 		localStorage[this.name] = newStatus;
 	}
 }

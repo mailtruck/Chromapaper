@@ -2,23 +2,13 @@ var syncFailed = false;
 var url_exists = new Boolean();
 var syncButtonOn;
 
-/*
-       +--------------------+
--------|   Page Functions   |------------------------------------------------------------------------------------------
-       +--------------------+
-*/
-
 if (location.host == "www.instapaper.com") {
 	switch (location.pathname.split('/')[1]) {
 		case "u":
-			chrome.extension.sendRequest({method: "getSyncButtonOption"}, function(response) {
-					syncButtonOn = response.status;
-					if (!syncButtonOn) {
-						syncButtonOn = "true";
-					}
-					addOptions(true);
-				}
-			);
+			chrome.extension.sendRequest({method: "getOption", option: "syncButtonOn"}, function(response) {
+				syncButtonOn = response.status;
+				addOptions(true);
+			});
 			break;
 		case "browse":
 		case "starred":
@@ -54,9 +44,6 @@ function addOptions(sync) {
 	
 	chromeDiv.appendChild(label);
 	chromeDiv.appendChild(optionsLink);
-	
-	console.log(sync);
-	console.log(syncButtonOn);
 	
 	if (sync == true && syncButtonOn == "true") {
 		chromeDiv.appendChild(newBullet);

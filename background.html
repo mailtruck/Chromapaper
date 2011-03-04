@@ -2,27 +2,6 @@
 	<head>
 		<script src="script/includes/options.js" type="text/javascript"></script>
 		<script type="text/javascript">
-			/* call options.createListeners() */
-			/*chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-				if (request.method == "optionsTest" && request.option == "test") {
-					console.log('lol');
-					sendResponse({status: 'it worked'})
-				}
-			});*/
-
-			//CHANGE THIS so that the if statement is created under the if statement down there V
-			/*for (i in options) {
-				chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-					console.log('request recieved...');
-					console.log('asked for option ' + request.option + ' versus ' + options[i].name);
-					console.log('looking for method ' + request.method + ' versus ' + 'getOption');
-					if (request.method == 'getOption' && request.option == options[i].name) {
-						console.log('retrieved ' + options[i].name);
-						sendResponse({status: options[i].get()});
-					}
-				});
-				console.log('created method for ' + options[i].name)
-			}*/
 			chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
 				if (request.method == "addFolder") {
 					folders = localStorage['folders'];
@@ -48,12 +27,32 @@
 					}
 					localStorage['folders'] = folders;
 				}
+				else if (request.method == 'getFolders') {
+					sendResponse({status: localStorage['folders']})
+				}
+				/*
+				//hey, this doesn't work because you can't have a for loop with else ifs referring to an if tree in the block above it! also making more addlisteners just makes it override the previous ones. ugh.
 				for (i in options) {
 					else if (request.method == 'getOption' && request.option == options[i].name) {
 						console.log('retrieved ' + options[i].name);
 						sendResponse({status: options[i].get()});
 					}
+
+				//soooo let's do it manually for now ._.
+				}*/
+				else if (request.method == 'getOption' && request.option == 'syncButtonOn') {
+					sendResponse({status: options.syncButtonOn.get()});
 				}
+				else if (request.method == 'getOption' && request.option == 'scrollTrackingOn') {
+					sendResponse({status: options.scrollTrackingOn.get()});
+				}
+				else if (request.method == 'getOption' && request.option == 'paginationOnlineOn') {
+					sendResponse({status: options.paginationOnlineOn.get()});
+				}
+				else if (request.method == 'getOption' && request.option == 'paginationOn') {
+					sendResponse({status: options.paginationOn.get()});
+				}
+
 				else
 					sendResponse({}); // snub them.*/
 			});

@@ -7,40 +7,28 @@ var scrollTimer;
 //document.write('<script type="text/javascript" src="' + chrome.extension.getURL('script/includes/options.js') + '"></scr' + 'ipt>'); 
 
 //coming from online
-/*if (location.host == "www.instapaper.com") {
+if (location.host == "www.instapaper.com") {
 	switch (location.pathname.split('/')[1]) {
 		case "text":
 		case "go":
 			
 			online = true;
-			chrome.extension.sendRequest({method: "testOption"}, function(response) {
-				console.log('recieved' + response)
-			});
-			console.log(options);
-			/*if (options.paginationOnlineOn.getRequest() == "false") {
-				if (options.scrollTrackingOn.getRequest() == "true") {
-					scrollTracking();
-				}
-			}
+			checkScrollTracking();
 			break;
 	}
-}*/
+}
 
 //coming from offline
 if (location.protocol == "chrome-extension:") {
-	chrome.extension.sendRequest({method: "getPaginationOption"}, function(response) {
-		paginationSetting = response.status;
-		if (!paginationSetting) {
-			paginationSetting = "false";
-		}
-		online = false;
-		if (paginationSetting == "false") {
-			chrome.extension.sendRequest({method: "getScrollTrackingOption"}, function(response) {
-				scrollTrackingSetting = response.status;
-				if (scrollTrackingSetting == "true") {
-					scrollTracking();
-				}
-			});	
+	online = false;
+	checkScrollTracking();
+}
+
+function checkScrollTracking() {
+	chrome.extension.sendRequest({method: "getOption", option:'scrollTrackingOn'}, function(response) {
+		scrollTrackingSetting = response.status;
+		if (scrollTrackingSetting == "true") {
+			scrollTracking();
 		}
 	});
 }
