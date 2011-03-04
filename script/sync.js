@@ -274,9 +274,9 @@ var instapaperScraper = new function() {
 	
 		//todo: what if user has no articles in unread but has articles in folders??
 	
-		if (options.folders_to_sync != "") {
-			for (i in options.folders_to_sync) {
-				folderNum = options.folders_to_sync[i];
+		if (folders_to_sync != "") {
+			for (i in folders_to_sync) {
+				folderNum = folders_to_sync[i];
 				page_loop_counter = 1;
 			
 				var status = "continue";

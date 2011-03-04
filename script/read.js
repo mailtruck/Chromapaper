@@ -58,7 +58,8 @@ function renderPage(tx,results) {
 	//Replace images
 	var storyImages = storyDiv.getElementsByTagName("img");
 	for (i = 0; i < storyImages.length; i++) {
-		database.getImage(id, storyImages[i].getAttribute("src")); //calls back replaceImage
+		console.log('gonna try to get an image hurr ' + id);
+		database.getImage((id), storyImages[i].getAttribute("src")); //calls back replaceImage
 	}
 	
 	//Fix encoding
@@ -80,6 +81,7 @@ function renderPage(tx,results) {
 function replaceImage(tx,results) {
 	try {
 		id = results.rows.item(0).id;
+		console.log('well we found an id i guess')
 		src = results.rows.item(0).src;
 		imageBlob = results.rows.item(0).data;
 		
