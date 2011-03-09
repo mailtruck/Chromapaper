@@ -28,6 +28,7 @@ var sync = new function() {
 		overlay.start();
 
 		this.pages = instapaperScraper.getListHtml();
+
 		if (this.pages == "no pages saved") {
 			overlay.noPages();
 			return;
@@ -38,7 +39,7 @@ var sync = new function() {
 		}
 		this.urls = instapaperScraper.getUrls(this.pages);
 		this.details = instapaperScraper.getDetails(this.pages);
-		
+
 		saveDB.start();
 	};
 	
@@ -96,23 +97,26 @@ var saveDB = new function() {
 	
 	this.start = function() {
 		overlay.scrapingStarted();
+		console.log(sync.urls)
 		for (i in sync.urls) {
 			//this basically queues each query to be acted on once the loop is complete...
 			checkIn(i);
 		}
 	};
 	var checkIn = function (i) {
+		console.log(sync.urls[i].url);
 		database.db.transaction(function(tx) {
 			tx.executeSql("select * from pages where url=?",
-				[sync.urls[i]],
+				[sync.urls[i].url],
 				function (tx, results) {
 					if (results.rows.length == 0) {
 
 						var page = {
-							url: sync.urls[i],
+							url: sync.urls[i].url,
 							description: sync.details[i].description,
 							title: sync.details[i].title,
-							id: i
+							id: i,
+							folder: sync.urls[i].folder
 						}
 						saveDB.pages_to_save.push(page);
 					}
@@ -123,6 +127,7 @@ var saveDB = new function() {
 							syncProgress.check();
 						}
 						syncProgress.url_check_done = true;
+						console.log(saveDB.pages_to_save);
 						scrapePages(saveDB.pages_to_save);
 					}
 				},
@@ -134,9 +139,10 @@ var saveDB = new function() {
 	var savePage = function (page) {
 		
 		database.db.transaction(function(tx) {
-			tx.executeSql("insert into pages (article_title, url, html, available, description) values (?, ?, ?, 'true', ?);",
-				[page.title, page.url, page.html, page.description],
+			tx.executeSql("insert into pages (article_title, url, html, available, description, folder) values (?, ?, ?, 'true', ?, ?);",
+				[page.title, page.url, page.html, page.description, page.folder],
 				function () {
+					console.log(page.title + ' | ' + page.url + ' | ' + page.description + ' | ' + page.folder);
 					if (saveDB.pages_saved_num == (saveDB.pages_to_save.length - 1)) {
 						syncProgress.saves_done = true;
 						syncProgress.check();
@@ -266,7 +272,7 @@ var instapaperScraper = new function() {
 		var status = "continue";
 		//loop this for each page
 		 while (status == "continue") {
-			status = scrapePage("http://www.instapaper.com/u/" + (instapaper_html.length + 1)); //this is a little weird... scrape page automatically adds it to instapaper_html, so we return the status to decide if we should keep looping
+			status = scrapePage("http://www.instapaper.com/u/" + (instapaper_html.length + 1), ""); //this is a little weird... scrape page automatically adds it to instapaper_html, so we return the status to decide if we should keep looping
 		}
 		if (status != 'done') {
 			return status; //means not logged in or no pages
@@ -281,7 +287,7 @@ var instapaperScraper = new function() {
 			
 				var status = "continue";
 				while (status == "continue") {
-					status = scrapePage("http://www.instapaper.com/u/folder/" + folderNum + "/fakename/" + page_loop_counter, false);
+					status = scrapePage("http://www.instapaper.com/u/folder/" + folderNum + "/fakename/" + page_loop_counter, folderNum);
 					page_loop_counter++;
 				}
 			}
@@ -289,7 +295,7 @@ var instapaperScraper = new function() {
 		
 		return instapaper_html;
 	}
-	var scrapePage = function(url) {	
+	var scrapePage = function(url, folder) {	
 		var instapaper_page = new XMLHttpRequest();
 		try {
 			instapaper_page.open("GET", url, false);
@@ -299,8 +305,10 @@ var instapaperScraper = new function() {
 			console.log("Error description: " + err);
 		}
 	
-		var instapaper_page_html_string = new String();
+		var page = new Object();
 		var instapaper_page_html_string = instapaper_page.responseText;
+		page.html = instapaper_page.responseText;
+		page.folder = folder;
 		
 		if (instapaper_page_html_string.search("Log out") == -1) {
 			console.log("ain't logged in bub");
@@ -316,7 +324,7 @@ var instapaperScraper = new function() {
 		}
 		else {
 			status = "continue";
-			instapaper_html.push(instapaper_page_html_string);                                    
+			instapaper_html.push(page);                                    
 		}
 		return status;
 	}
@@ -327,7 +335,7 @@ var instapaperScraper = new function() {
 		var num_urls = 0;
 
 		for (loop_counter in instapaper_html) {
-			var instapaperPageStringUnescaped = instapaper_html[loop_counter];
+			var instapaperPageStringUnescaped = instapaper_html[loop_counter].html;
 			var instapaperPageString = instapaperPageStringUnescaped.replace(/&/gi, "&amp;");
 
 			parser = new DOMParser();
@@ -339,7 +347,15 @@ var instapaperScraper = new function() {
 			for (i=0;i<links.length;i++) {
 				url = links[i].getAttribute("href");
 				if (url.startsWith("/text") == true || url.startsWith("/go") == true) {
-					instapaperURLs[num_urls] = url;
+					var page = new Object();
+					page.url = url;
+					try {
+						page.folder = instapaper_html[i].folder;
+					}
+					catch(err) {
+						page.folder = 0;
+					}
+					instapaperURLs.push(page);
 					num_urls++;
 				}
 			}
@@ -349,7 +365,6 @@ var instapaperScraper = new function() {
 	}
 	
 	this.getDetails = function(instapaperPagesHTML) {
-	
 		//this array holds the details objects for each page
 		var instapaperDetails = new Array();
 		var num_details = 0;
@@ -358,7 +373,7 @@ var instapaperScraper = new function() {
 		for (loop_counter in instapaperPagesHTML) {
 		
 			//escape out the html of the page so it parses right
-			var instapaperPageStringUnescaped = instapaperPagesHTML[loop_counter];
+			var instapaperPageStringUnescaped = instapaperPagesHTML[loop_counter].html;
 			var instapaperPageString = instapaperPageStringUnescaped.replace(/&/gi, "&amp;");
 		
 			//validation issue
