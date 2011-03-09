@@ -73,11 +73,9 @@ var Option = function (args) {
 
 	this.get = function() {
 		if (localStorage[this.name]) {
-			console.log('returning option ' + this.name + ', it is ' + localStorage[this.name])
 			return localStorage[this.name];
 		}
 		else {
-			console.log('returning default value')
 			return this.defaultStatus;
 		}
 	}
@@ -92,7 +90,6 @@ var Option = function (args) {
 		});
 	}
 	this.set = function(newStatus) {
-		console.log('attempting to set ' + this.name + ' to ' + newStatus)
 		localStorage[this.name] = newStatus;
 	}
 }
