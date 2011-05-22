@@ -7,9 +7,9 @@
 #			scrape each article...
 #
 
-# This is super callback-heavy, but in mostly chronological order, so it shouldn't be too hard to follow 
+# This is super callback-heavy, but in mostly chronological order, so it shouldn't be too hard to follow. Instead of just trying to do everything in one heavily-nested function, I've split out parts of the syncing process into their own functions, even if they're only used once, just to make the organization easier to follow. 
 
-# todo: pull out online/logged in tests to another file
+# TODO: pull out online/logged in tests to another file
 
 # The scraper here is designed to first get the default unread page at /u, which
 # should contain the list of folders in the sidebar that can be scraped to find
@@ -30,6 +30,10 @@ $.get("http://instapaper.com/u/", (html) ->
 	# test_folder = new db.Folder({id: 1, name:"test", slug: "-test-"})
 	
 	folders_list = db.Folder.all().list(null, (results) -> 
+
+		# We use this to decide if we need to do a flush... which will then also decide if we need to call the next step from the flush's callback or if we just should call it
+		folder_added = false
+
 		for link in folder_links
 			# Pull out ID, Slug, and name of folder
 			url = $(link).attr("href")
@@ -47,14 +51,41 @@ $.get("http://instapaper.com/u/", (html) ->
 			if exists is false
 				folder = new db.Folder({instapaper_id: id, name: name, slug: slug})
 				persistence.add(folder)
-				persistence.transaction( (tx) ->
-					persistence.flush(tx, ->
-							console.log("finished flushing")
-						)
-				)
+				wrote_to_db = true
+			
+		# We need to wait until the database calls are all
+		if wrote_to_db = true
+			persistence.transaction( (tx) ->
+				persistence.flush(tx, ->
+						scrapeArticles()
+					)
+			)
+		else
+			scrapeArticles()
+
 	)
-		
-	# Next, compare retrieved list of folders against database... wait, why don't we roll this into the above loop?
 	# Compare folders in database to folders found in list - delete ones that no longer exist - as well as articles contained within?
 )
 
+scrapeArticles = ->
+	# Read folders from database
+	folders_list = db.Folder.all().list(null, (results) -> 
+		scrapeFolder("http://instapaper.com/u/")
+		for folder in results
+			console.log("for folder " + folder.name)
+			instapaper_id = folder.instapaper_id
+			slug = folder.slug
+			url = "http://instapaper.com/u/folder/" + instapaper_id + "/" + slug + "/"
+				
+			scrapeFolder(url)
+	)
+
+# some recursion happenin' here
+scrapeFolder = (url, i = 1) ->
+	$.get(url + i, (html) ->
+		# Check to see if page has articles on it
+		console.log("scraping page for " + url + i)
+		if (html.search("No articles in this folder.") == -1) and (html.search("No articles saved.") == -1)
+			scrapeFolder(url, i + 1)
+		$(html).
+	)
